@@ -6,12 +6,16 @@
 package controller;
 
 import db_connections.DataSourceWrapper;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import model.TFingerPrint;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Properties;
 import org.apache.log4j.Logger;
 
 /**
@@ -24,7 +28,30 @@ public class MsSQLController {
     private static final Logger LOGGER = Logger.getLogger(MsSQLController.class);
 
     public MsSQLController() throws SQLException {
-        this.mssqlDataSourceWrapper = new DataSourceWrapper("jdbc:sqlserver://localhost:1433;databaseName=RIMS_Attendance;", "sa", "123");
+        Properties prop = new Properties();
+        InputStream input = null;
+        String dbName = null;
+        String user = null;
+        String pswd = null;
+        try {
+
+            input = new FileInputStream("config.properties");
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            System.out.println("get database name : "+prop.getProperty("getDataSourceName"));
+            // set value into variable
+            dbName = prop.getProperty("getDataSourceName");
+            user = prop.getProperty("getDataSourceUser");
+            pswd = prop.getProperty("getDataSourcePswd");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        this.mssqlDataSourceWrapper = new DataSourceWrapper(dbName, user, pswd);
+//        this.mssqlDataSourceWrapper = new DataSourceWrapper("jdbc:sqlserver://localhost:1433;databaseName=RIMS_Attendance;", "sa", "123");
     }
 
     public ArrayList<TFingerPrint> getFingerPrintList() throws SQLException {

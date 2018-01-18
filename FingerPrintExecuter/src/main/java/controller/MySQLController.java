@@ -6,11 +6,15 @@
 package controller;
 
 import db_connections.DataSourceWrapper;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Properties;
 import model.TEmployeeAssingment;
 import model.TFingerPrint;
 
@@ -23,7 +27,30 @@ public class MySQLController {
     private final DataSourceWrapper mysqlDataSourceWrapper;
 
     public MySQLController() throws SQLException {
-        this.mysqlDataSourceWrapper = new DataSourceWrapper("jdbc:mysql://localhost:3306/care_point", "root", "mysql");
+        Properties prop = new Properties();
+        InputStream input = null;
+        String dbName = null;
+        String user = null;
+        String pswd = null;
+        try {
+
+            input = new FileInputStream("config.properties");
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            System.out.println("set database name : "+prop.getProperty("setDataSourceName"));
+            // set value into variable
+            dbName = prop.getProperty("setDataSourceName");
+            user = prop.getProperty("setDataSourceUser");
+            pswd = prop.getProperty("setDataSourcePswd");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        this.mysqlDataSourceWrapper = new DataSourceWrapper(dbName, user, pswd);
+//        this.mysqlDataSourceWrapper = new DataSourceWrapper("jdbc:mysql://localhost:3306/care_point", "root", "mysql");
 //        this.mysqlDataSourceWrapper = new DataSourceWrapper("jdbc:mysql://123.231.62.166:3306/care_point", "kavishmanjitha", "kavishmanjitha");
     }
 
