@@ -15,8 +15,6 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.sql.SQLException;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -35,9 +33,9 @@ public class SystemTrayUtil {
         return instance;
     }
 
-    public static void initSystemTray(FingerprintSyncGUI fingerprintSyncGUI) {
+    public static void initSystemTray(SystemIntegrationSyncGUI systemIntegrationSyncGUI) {
         final PopupMenu popup = new PopupMenu();
-        TrayIcon trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().createImage("images/2.png"));
+        TrayIcon trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().createImage("images/cash.png"));
         final SystemTray tray = SystemTray.getSystemTray();
 
         // Create a pop-up menu components
@@ -51,8 +49,8 @@ public class SystemTrayUtil {
         popup.addSeparator();
         popup.add(loggerItem);
         popup.addSeparator();
-        popup.add(exitItem);
-
+        popup.add(exitItem); 
+        
         trayIcon.setPopupMenu(popup);
 
         aboutItem.addActionListener(new ActionListener() {
@@ -65,8 +63,8 @@ public class SystemTrayUtil {
        
         loggerItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!fingerprintSyncGUI.isVisible()) {
-                    fingerprintSyncGUI.setVisible(true);
+                if (!systemIntegrationSyncGUI.isVisible()) {
+                    systemIntegrationSyncGUI.setVisible(true);
                     trayIcon.displayMessage("Account Integration System", "logger viewed.. ", TrayIcon.MessageType.INFO);
                 } else {
                     trayIcon.displayMessage("Account Integration System", "logger already exists.. ", TrayIcon.MessageType.WARNING);
@@ -76,8 +74,8 @@ public class SystemTrayUtil {
         });
         exitItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (fingerprintSyncGUI.isVisible()) {
-                    fingerprintSyncGUI.setVisible(false);
+                if (systemIntegrationSyncGUI.isVisible()) {
+                    systemIntegrationSyncGUI.setVisible(false);
                     trayIcon.displayMessage("Account Integration System", "logger closed.. ", TrayIcon.MessageType.INFO);
                 }else{
                     trayIcon.displayMessage("Account Integration System", "logger already closed.. ", TrayIcon.MessageType.INFO);
@@ -97,7 +95,6 @@ public class SystemTrayUtil {
     protected static Image createImage(String path) {
         URL imageURL = SystemTrayUtil.class.getResource(path);
         if (imageURL == null) {
-            System.err.println("Resource not found: " + path);
             return null;
         } else {
             return (new ImageIcon(imageURL)).getImage();

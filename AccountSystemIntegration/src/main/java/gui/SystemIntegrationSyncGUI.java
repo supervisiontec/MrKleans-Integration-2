@@ -10,31 +10,56 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import sync_service.SyncService;
 
 /**
  *
  * @author 'Kasun Chamara'
  */
-public class FingerprintSyncGUI extends javax.swing.JFrame {
+public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
-    public FingerprintSyncGUI() {
+    public SystemIntegrationSyncGUI() {
         initComponents();
 
         initOthers();
+        
+        try {
+            getDetailCount(txtDate.getText());
+        } catch (SQLException ex) {
+            System.out.println("get detail count function not support !");
+            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void executeGrn(String date) throws SQLException {
         SyncService.getInstance().executeGrn(date);
+        getDetailCount(date);
     }
+
     private void executeInvoice(String date) throws SQLException {
         SyncService.getInstance().executeInvoice(date);
+        getDetailCount(date);
+    }
+    private void executePayment(String date) throws SQLException {
+        SyncService.getInstance().executePayment(date);
+        getDetailCount(date);
+    }
+    private void getDetailCount(String date) throws SQLException {
+        Integer grnCount=SyncService.getInstance().getGrnCount(date);
+        btnGrn.setText("GRN"+" - "+grnCount);
         
+        Integer invoiceCount=SyncService.getInstance().getInvoiceCount(date);
+        btnInvoice.setText("Invoice"+" - "+invoiceCount);
+        
+        Integer paymentCount=SyncService.getInstance().getPaymentCount(date);
+        btnPayment.setText("Payment"+" - "+paymentCount);
     }
 
     @SuppressWarnings("unchecked")
     private void initOthers() {
         setTitle("Account Integration System");
+        setLocationRelativeTo(null);
         txtLog.setEditable(false);
         txtDate.setText(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 
@@ -52,6 +77,8 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
         btnClear = new javax.swing.JButton();
         btnGrn = new javax.swing.JButton();
         btnInvoice = new javax.swing.JButton();
+        btnPayment = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(550, 330));
@@ -87,27 +114,35 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
             }
         });
 
+        btnPayment.setText("Payment");
+        btnPayment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPaymentActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Date :");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(btnPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(425, 425, 425)
                         .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(btnGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(5, 5, 5))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(btnInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 406, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 759, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -115,15 +150,18 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
                 .addGap(6, 6, 6)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnClear))
+                    .addComponent(btnClear)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(10, 10, 10)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnGrn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnInvoice))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addComponent(btnInvoice)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnPayment))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         pack();
@@ -131,7 +169,7 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
 
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        this.setDefaultCloseOperation(FingerprintSyncGUI.HIDE_ON_CLOSE);
+        this.setDefaultCloseOperation(SystemIntegrationSyncGUI.EXIT_ON_CLOSE);
     }//GEN-LAST:event_formWindowClosing
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
@@ -143,7 +181,7 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
 
             executeInvoice(txtDate.getText());
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(FingerprintSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnInvoiceActionPerformed
 
@@ -152,15 +190,21 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
 
             executeGrn(txtDate.getText());
         } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(FingerprintSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnGrnActionPerformed
+
+    private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
+        try {
+            executePayment(txtDate.getText());
+        } catch (SQLException ex) {
+            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnPaymentActionPerformed
 
     /**
      * @param args the command line arguments
      */
-//    static FingerprintSyncGUI fingerprintSyncGUI = new FingerprintSyncGUI();
-//static final org.apache.log4j.Logger logger = LogManager.getLogger(FingerprintSyncGUI.class.getName());
     public static void main(String args[]) {
 //   
     }
@@ -169,10 +213,11 @@ public class FingerprintSyncGUI extends javax.swing.JFrame {
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnGrn;
     private javax.swing.JButton btnInvoice;
+    private javax.swing.JButton btnPayment;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField txtDate;
     private javax.swing.JTextArea txtLog;
     // End of variables declaration//GEN-END:variables
 
-    
 }

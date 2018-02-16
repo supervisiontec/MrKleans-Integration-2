@@ -70,7 +70,7 @@ public class MClient implements Serializable {
     @Column(name = "is_new")
     private boolean isNew;
     
-    @Column(name = "date")
+    @Column(name = "`date`")
     private String date;
 
     @Column(name = "acc_account")
@@ -94,9 +94,6 @@ public class MClient implements Serializable {
         this.accAccount = accAccount;
     }
 
-   
-
-    
 
     public Integer getIndexNo() {
         return indexNo;

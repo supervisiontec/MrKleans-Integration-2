@@ -8,6 +8,8 @@ package sync_service;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import model.operation_model.Grn;
+import model.operation_model.Invoice;
+import model.operation_model.Payment;
 import service.OperationService;
 import service.TransactionService;
 
@@ -48,15 +50,42 @@ public class SyncService {
     }
 
     public void executeInvoice(String date) throws SQLException {
-//        ArrayList<Grn> invoiceList = operationService.getNotCheckGrnList(date);
-//        if (invoiceList.isEmpty()) {
-//            System.out.println("Integration Invoice is empty!");
-//        } else {
-//            System.out.println("Finded " + invoiceList.size() + " Invoice to Integrate with account System !");
-//        }
-//        for (Grn grn : invoiceList) {
-//            TransactionService.getInstance().saveGrn(grn);
-//        }
+        ArrayList<Invoice> invoiceList = operationService.getNotCheckInvoiceList(date);
+        if (invoiceList.isEmpty()) {
+            System.out.println("Integration Invoice is empty!");
+        } else {
+            System.out.println("Finded " + invoiceList.size() + " Invoice to Integrate with account System !");
+        }
+        for (Invoice invoice : invoiceList) {
+            TransactionService.getInstance().saveInvoice(invoice);
+        }
 
+    }
+
+    public void executePayment(String date) throws SQLException {
+        ArrayList<Payment> paymentList = operationService.getNotCheckPaymentList(date);
+         if (paymentList.isEmpty()) {
+            System.out.println("Integration Payment is empty!");
+        } else {
+            System.out.println("Finded " + paymentList.size() + " Payment to Integrate with account System !");
+        }
+        for (Payment payment : paymentList) {
+            TransactionService.getInstance().savePayment(payment);
+        }
+    }
+
+    public Integer getGrnCount(String date) throws SQLException {
+        ArrayList<Grn> grnList = operationService.getNotCheckGrnList(date);
+        return grnList.size();
+    }
+
+    public Integer getInvoiceCount(String date) throws SQLException {
+        ArrayList<Invoice> invoiceList = operationService.getNotCheckInvoiceList(date);
+        return invoiceList.size();
+    }
+
+    public Integer getPaymentCount(String date) throws SQLException {
+        ArrayList<Payment> paymentList = operationService.getNotCheckPaymentList(date);
+        return paymentList.size();
     }
 }

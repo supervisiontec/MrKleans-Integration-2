@@ -16,6 +16,14 @@ public interface Constant {
     public static final String STOCK_ITEM_SUB_ACCOUNT_OF = "stock_item_sub_account_of";
     public static final String SERVICE_ITEM_SUB_ACCOUNT_OF = "service_item_sub_account_of";
     public static final String NON_STOCK_ITEM_SUB_ACCOUNT_OF = "non_stock_item_sub_account_of";
+    public static final String ITEM_SALES_CASH_IN = "item_sales_cash_in";
+    public static final String CHEQUE_IN_HAND = "cheque_in_hand";
+    public static final String ITEM_DISCOUNT_OUT = "item_discount_out";
+    public static final String ITEM_SALES_INCOME = "item_sales";
+    public static final String NBT_ACCOUNT_OUT = "nbt_account_out";
+    public static final String VAT_ACCOUNT_OUT = "vat_account_out";
+    public static final String NBT_ACCOUNT_IN = "nbt_account_in";
+    public static final String VAT_ACCOUNT_IN = "vat_account_in";
 //    public static final String UNREALIZED_ISSUED = "unrealized_issued";
 //    public static final String UNREALIZED_RECEIVED = "unrealized_received";
 //    public static final String OVER_PAYMENT_ISSUED = "over_payment_issue";
@@ -23,18 +31,23 @@ public interface Constant {
 //    public static final String INVENTORY = "inventory";
 //    public static final String ITEM_SALES = "item_sales";
 //    public static final String ITEM_DISCOUNT_OUT = "item_discount_out";
-//    public static final String ITEM_SALES_CASH_IN = "item_sales_cash_in";
-//    public static final String CHEQUE_IN_HAND = "cheque_in_hand";
     
     // master type
     public static final String CUSTOMER = "CUSTOMER";
     public static final String SUPPLIER = "SUPPLIER";
+    public static final String VEHICLE = "VEHICLE";
     public static final String ACCRUED_SUPPLIER= "ACCRUED_SUPPLIER";
     public static final String GL_SUPPLIER = "GL_SUPPLIER";
     public static final String ITEM = "ITEM";
+    public static final String INVOICE = "INVOICE";
 //    public static final String LOAN = "LOAN";
     public static final String GRN = "GRN";
+    
+    //form name
+    public static final String SYSTEM_INTEGRATION = "SYSTEM_INTEGRATION";
     public static final String SYSTEM_INTEGRATION_GRN = "SYSTEM_INTEGRATION_GRN";
+    public static final String SYSTEM_INTEGRATION_INVOICE = "SYSTEM_INTEGRATION_INVOICE";
+    public static final String SYSTEM_INTEGRATION_PAYMENT = "SYSTEM_INTEGRATION_PAYMENT";
     
     //status
     public static final String STATUS_APPROVED = "APPROVED";
@@ -42,8 +55,8 @@ public interface Constant {
     public static final String STATUS_DELETED = "DELETED";
     public static final String STATUS_REJECT = "REJECT";
     
-    //item type
-    public static final String ITEM_NON_STOCK = "NON STOCK";
+    //item type  
+    public static final String ITEM_NON_STOCK = "NON_STOCK";
     public static final String ITEM_STOCK = "STOCK";
     public static final String ITEM_SERVICE = "SERVICE";
     
@@ -56,8 +69,15 @@ public interface Constant {
     public static final String ITEM_UNIT_MAIN = "MAIN";
     public static final String ITEM_UNIT_SUB = "OTHER";
     
+    // payment type
+    public static final String PAYMENT_CASH = "CASH";
+    public static final String PAYMENT_CHEQUE = "CHEQUE";
+    public static final String PAYMENT_CARD = "CARD";
+    
     //form Code
     public static final String CODE_INTEGRATION_GRN = "ISGRN";
+    public static final String CODE_INTEGRATION_INVOICE = "ISINV";
+    public static final String CODE_INTEGRATION_PAYMENT = "ISPMT";
 //    public static final String CODE_JOURNAL = "JNL";
 //    public static final String CODE_BANK_RECONCILIATION = "RECON";
 //    public static final String CODE_SUPPLIER_PAYMENT = "SUPPAY";

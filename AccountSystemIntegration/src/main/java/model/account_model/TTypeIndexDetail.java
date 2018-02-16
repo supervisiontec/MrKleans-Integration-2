@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model.operation_model;
+package model.account_model;
 
+import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,8 +19,8 @@ import javax.persistence.Table;
  * @author chama
  */
 @Entity
-@Table(name = "m_supplier")
-public class TTypeIndexDetail {
+@Table(name = "t_type_index_detail")
+public class TTypeIndexDetail implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,7 +6,11 @@
 package service;
 
 import db_connections.DataSourceWrapper;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  *
@@ -21,33 +25,38 @@ public class ConnectionService {
     public ConnectionService() throws SQLException {
         
         
-//        Properties prop = new Properties();
-//        InputStream input = null;
-//        String dbName = null;
-//        String user = null;
-//        String pswd = null;
-//        try {
-//
-//            input = new FileInputStream("config.properties");
-//
-//            // load a properties file
-//            prop.load(input);
-//
-//            // get the property value and print it out
-//            System.out.println("operation database name : " + "jdbc:mysql://localhost:3306/integration_test");
-//            System.out.println("account database name : " + "jdbc:mysql://localhost:3306/care_point_account");
-//            // set value into variable
-////            dbName = prop.getProperty("getDataSourceName");
-////            user = prop.getProperty("getDataSourceUser");
-////            pswd = prop.getProperty("getDataSourcePswd");
-//
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
+        Properties prop = new Properties();
+        InputStream input = null;
+        String accUrl = null;
+        String accUser = null;
+        String accPswd = null;
         
+        String operaUrl = null;
+        String operaUser = null;
+        String operaPswd = null;
         
-        this.operationDataSourceWrapper = new DataSourceWrapper("jdbc:mysql://192.168.7.253:3306/integration_test", "root", "mysql");
-        this.accountDataSourceWrapper = new DataSourceWrapper("jdbc:mysql://localhost:3306/care_point_account", "root", "mysql");
+        try {
+
+            input = new FileInputStream("config.properties");
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            
+            accUrl = prop.getProperty("account_url");
+            accUser = prop.getProperty("account_user");
+            accPswd = prop.getProperty("account_password");
+            
+            operaUrl = prop.getProperty("opera_url");
+            operaUser = prop.getProperty("opera_user");
+            operaPswd = prop.getProperty("opera_password");
+
+        } catch (IOException ex) {
+            System.out.println("Can't find database Connection !");
+        }
+        this.operationDataSourceWrapper = new DataSourceWrapper(accUrl, accUser, accPswd);
+        this.accountDataSourceWrapper = new DataSourceWrapper(operaUrl, operaUser, operaPswd);
     }
     
      public static ConnectionService getInstance() throws SQLException {
