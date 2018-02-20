@@ -63,4 +63,16 @@ public class OperationService {
     static Integer updatePayment(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().updatePayment(indexNo,operaConnection);
     }
+
+    public Integer getNotGrnCount(String date) throws SQLException {
+        return OperationController.getInstance().getNotCheckGrnCount(date);
+    }
+
+    public Integer getNotCheckInvoiceCount(String date) throws SQLException {
+        return OperationController.getInstance().getNotCheckInvoiceCount(date);
+    }
+
+    public Integer getNotCheckPaymentCount(String date) throws SQLException {
+        return OperationController.getInstance().getNotCheckPaymentCount(date);
+    }
 }

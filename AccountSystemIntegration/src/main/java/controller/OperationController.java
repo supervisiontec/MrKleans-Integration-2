@@ -270,7 +270,7 @@ public class OperationController {
         while (resultSet.next()) {
             PaymentDetail detail = new PaymentDetail();
             detail.setIndexNo(resultSet.getInt(1));
-            detail.setInvoice(resultSet.getInt(2));
+            detail.setInvoice(resultSet.getString(2));
             detail.setPayment(resultSet.getInt(3));
             detail.setAmount(resultSet.getBigDecimal(4));
             list.add(detail);
@@ -279,7 +279,7 @@ public class OperationController {
     }
 
     public List<PaymentInformation> getPaymentInformations(Integer payment, Connection operaConnection) throws SQLException {
-         String query = "select payment_information.*\n"
+        String query = "select payment_information.*\n"
                 + "from payment_information\n"
                 + "WHERE payment_information.payment=?";
         PreparedStatement preparedStatement = operaConnection.prepareStatement(query);
@@ -297,9 +297,55 @@ public class OperationController {
             detail.setBankBranch(resultSet.getString(7));
             detail.setCardType(resultSet.getString(8));
             detail.setCardReader(resultSet.getString(9));
+            detail.setNumber(resultSet.getString(10));
             list.add(detail);
         }
         return list;
+    }
+
+    public Integer getNotCheckGrnCount(String date) throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String query = "select count(grn.index_no) as count\n"
+                    + "from grn where grn.enter_date <= ? and grn.`check`=0";
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, date);
+            ResultSet rst = preparedStatement.executeQuery();
+            if (rst.next()) {
+                return rst.getInt(1);
+            }
+            return 0;
+        }
+    }
+
+    public Integer getNotCheckInvoiceCount(String date) throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String query = "select count(invoice.index_no) as count\n"
+                    + "from invoice where invoice.enter_date <= ? and invoice.`check`=0";
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, date);
+            ResultSet rst = preparedStatement.executeQuery();
+            if (rst.next()) {
+                return rst.getInt(1);
+            }
+            return 0;
+        }
+    }
+
+    public Integer getNotCheckPaymentCount(String date) throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String query = "select count(payment.index_no) as count\n"
+                    + "from payment where payment.enter_date <= ? and payment.`check`=0";
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, date);
+            ResultSet rst = preparedStatement.executeQuery();
+            if (rst.next()) {
+                return rst.getInt(1);
+            }
+            return 0;
+        }
     }
 
 }

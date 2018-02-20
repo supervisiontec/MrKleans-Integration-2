@@ -30,7 +30,7 @@ public class PaymentDetail implements Serializable {
     private Integer indexNo;
 
     @Column(name = "invoice")
-    private Integer invoice;
+    private String invoice;
 
     @Column(name = "payment")
     private Integer payment;
@@ -41,7 +41,7 @@ public class PaymentDetail implements Serializable {
     public PaymentDetail() {
     }
 
-    public PaymentDetail(Integer indexNo, Integer invoice,  Integer payment, BigDecimal amount) {
+    public PaymentDetail(Integer indexNo, String invoice,  Integer payment, BigDecimal amount) {
         this.indexNo = indexNo;
         this.invoice = invoice;
         this.payment = payment;
@@ -56,11 +56,11 @@ public class PaymentDetail implements Serializable {
         this.indexNo = indexNo;
     }
 
-    public Integer getInvoice() {
+    public String getInvoice() {
         return invoice;
     }
 
-    public void setInvoice(Integer invoice) {
+    public void setInvoice(String invoice) {
         this.invoice = invoice;
     }
 

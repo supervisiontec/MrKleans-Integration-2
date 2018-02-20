@@ -32,11 +32,11 @@ public class SyncService {
         return instance;
     }
 
-    private SyncService() throws SQLException {
+    public SyncService() throws SQLException {
         this.operationService = new OperationService();
     }
 
-    public void executeGrn(String date) throws SQLException {
+    public void executeGrn(String date,Integer user) throws SQLException {
 
         ArrayList<Grn> grnList = operationService.getNotCheckGrnList(date);
         if (grnList.isEmpty()) {
@@ -45,11 +45,11 @@ public class SyncService {
             System.out.println("Finded " + grnList.size() + " Grn to Integrate with account System !");
         }
         for (Grn grn : grnList) {
-            TransactionService.getInstance().saveGrn(grn);
+            TransactionService.getInstance().saveGrn(grn,user);
         }
     }
 
-    public void executeInvoice(String date) throws SQLException {
+    public void executeInvoice(String date,Integer user) throws SQLException {
         ArrayList<Invoice> invoiceList = operationService.getNotCheckInvoiceList(date);
         if (invoiceList.isEmpty()) {
             System.out.println("Integration Invoice is empty!");
@@ -57,12 +57,12 @@ public class SyncService {
             System.out.println("Finded " + invoiceList.size() + " Invoice to Integrate with account System !");
         }
         for (Invoice invoice : invoiceList) {
-            TransactionService.getInstance().saveInvoice(invoice);
+            TransactionService.getInstance().saveInvoice(invoice,user);
         }
 
     }
 
-    public void executePayment(String date) throws SQLException {
+    public void executePayment(String date,Integer user) throws SQLException {
         ArrayList<Payment> paymentList = operationService.getNotCheckPaymentList(date);
          if (paymentList.isEmpty()) {
             System.out.println("Integration Payment is empty!");
@@ -70,22 +70,24 @@ public class SyncService {
             System.out.println("Finded " + paymentList.size() + " Payment to Integrate with account System !");
         }
         for (Payment payment : paymentList) {
-            TransactionService.getInstance().savePayment(payment);
+            TransactionService.getInstance().savePayment(payment,user);
         }
     }
 
     public Integer getGrnCount(String date) throws SQLException {
-        ArrayList<Grn> grnList = operationService.getNotCheckGrnList(date);
-        return grnList.size();
+        return operationService.getNotGrnCount(date);
     }
 
     public Integer getInvoiceCount(String date) throws SQLException {
-        ArrayList<Invoice> invoiceList = operationService.getNotCheckInvoiceList(date);
-        return invoiceList.size();
+        return operationService.getNotCheckInvoiceCount(date);
     }
 
     public Integer getPaymentCount(String date) throws SQLException {
-        ArrayList<Payment> paymentList = operationService.getNotCheckPaymentList(date);
-        return paymentList.size();
+        return operationService.getNotCheckPaymentCount(date);
     }
+
+    public Integer checkLoginUser(String name, String pswd) throws SQLException {
+        return TransactionService.getInstance().checkLoginUser(name,pswd);
+    }
+
 }

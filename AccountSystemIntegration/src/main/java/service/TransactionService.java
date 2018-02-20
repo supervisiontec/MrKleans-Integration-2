@@ -46,7 +46,7 @@ public class TransactionService {
         return instance;
     }
 
-    public Integer saveGrn(Grn grn) {
+    public Integer saveGrn(Grn grn, Integer user) {
 
         Connection operaConnection = null;
         Connection accConnection = null;
@@ -88,7 +88,7 @@ public class TransactionService {
             Integer grnIndex = AccountService.saveGrn(grn, supplierMap, accConnection);
 
 //          save acc ledger    
-            HashMap<Integer, Object> ledgerMap = AccountService.saveAccountLedgerWithSupplierNbtVat(grn, supplierMap, grnIndex, accConnection);
+            HashMap<Integer, Object> ledgerMap = AccountService.saveAccountLedgerWithSupplierNbtVat(grn, supplierMap, grnIndex, user, accConnection);
 
 //          save item
             HashMap<Integer, Integer> map = new HashMap<>();
@@ -113,13 +113,13 @@ public class TransactionService {
                 }
                 detail.setGrn(grnIndex);
 
-                String grnNo = AccountService.saveGrnDetail(detail, grn, map, accConnection);
+                String grnNo = AccountService.saveGrnDetail(detail, grn, map, user, accConnection);
                 if (null == grnNo) {
                     throw new RuntimeException("Grn Number was empty or Grn save failed !");
                 }
 
                 //save acc ledger with item
-                AccountService.saveAccLedgerWithItem(detail, grn.getBranch(), map, ledgerMap, accConnection);
+                AccountService.saveAccLedgerWithItem(detail, grn.getBranch(), map, ledgerMap, user, accConnection);
 
             }
             Integer saveSupplierLedger = AccountService.saveSupplierLedger(grn, grnIndex, supplierMap.get(2), accConnection);
@@ -164,7 +164,7 @@ public class TransactionService {
         return grn.getIndexNo();
     }
 
-    public Integer saveInvoice(Invoice invoice) {
+    public Integer saveInvoice(Invoice invoice, Integer user) {
 
         Connection operaConnection = null;
         Connection accConnection = null;
@@ -229,7 +229,7 @@ public class TransactionService {
                 vehicleIndex = null;
             }
 //          save invoice
-            HashMap<Integer, Integer> invoiceMap = AccountService.saveInvoice(invoice, customerMap, vehicleIndex, accConnection);
+            HashMap<Integer, Integer> invoiceMap = AccountService.saveInvoice(invoice, customerMap, vehicleIndex, user, accConnection);
 //
 //          save item
             HashMap<Integer, Integer> itemMap = new HashMap<>();
@@ -281,7 +281,7 @@ public class TransactionService {
                 throw new RuntimeException("Invoice Update fail !");
             }
 
-            // save account ledger
+            System.out.println(" ");
             //commit
             operaConnection.commit();
             accConnection.commit();
@@ -310,7 +310,7 @@ public class TransactionService {
         return invoice.getIndexNo();
     }
 
-    public Integer savePayment(Payment payment) {
+    public Integer savePayment(Payment payment, Integer user) {
         Connection operaConnection = null;
         Connection accConnection = null;
         try {
@@ -328,7 +328,6 @@ public class TransactionService {
             if (customerTypeIndexDetail.getType() == null) {
                 throw new RuntimeException("Customer Not found !");
             }
-
             Integer paymentIndex = AccountService.savePayment(payment, accConnection);
             if (paymentIndex <= 0) {
                 throw new RuntimeException("Payment Save Fail !");
@@ -341,7 +340,7 @@ public class TransactionService {
             HashMap<Integer, Object> numberMap = AccountService.getAccLedgerNumber(payment.getBranch(), accConnection);
 
             for (PaymentDetail paymentDetail1 : paymentDetail) {
-                AccountService.saveCustomerLedger(paymentDetail1, paymentIndex, payment, customerTypeIndexDetail, numberMap, accConnection);
+                AccountService.saveCustomerLedger(paymentDetail1, paymentIndex, payment, customerTypeIndexDetail, numberMap, user, accConnection);
             }
 
             List<PaymentInformation> paymentInformationList = OperationService.getPaymentInformations(payment.getIndexNo(), operaConnection);
@@ -349,7 +348,7 @@ public class TransactionService {
                 throw new RuntimeException("Payment Informations was Empty !");
             }
             for (PaymentInformation paymentInformation : paymentInformationList) {
-                AccountService.savePaymentInformation(paymentInformation, paymentIndex, payment, customerTypeIndexDetail, numberMap, accConnection);
+                AccountService.savePaymentInformation(paymentInformation, paymentIndex, payment, customerTypeIndexDetail, numberMap, user, accConnection);
             }
 
             Integer masterId = OperationService.updatePayment(payment.getIndexNo(), operaConnection);
@@ -360,7 +359,7 @@ public class TransactionService {
                 throw new RuntimeException("Payment Update fail !");
             }
 
-            // save account ledger
+             System.out.println(" ");
             //commit
             operaConnection.commit();
             accConnection.commit();
@@ -387,6 +386,41 @@ public class TransactionService {
         }
 
         return 1;
+    }
+
+    public Integer checkLoginUser(String name, String pswd) {
+        Connection accConnection = null;
+        Integer loginUser = -1;
+        try {
+            //Open a connection
+            accConnection = accountDataSourceWrapper.getConnection();
+
+            //Set auto commit as false.
+            accConnection.setAutoCommit(false);
+            // Execute a query to create statment
+            loginUser = AccountService.checkLoginUser(name, pswd, accConnection);
+
+            //commit
+            accConnection.commit();
+
+            //Clean-up environment
+            accConnection.close();
+
+        } catch (Exception e) {
+            try {
+                System.out.println("COMPILE ERROR ! , check the data and try again !");
+                System.out.println(e);
+                if (accConnection != null) {
+                    accConnection.rollback();
+                }
+                System.out.println("Transactions Rollbacked success !");
+            } catch (SQLException se2) {
+                System.out.println("Can't find database Connections !");
+
+            }
+        }
+        return loginUser;
+
     }
 
 }

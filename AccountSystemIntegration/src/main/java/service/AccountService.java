@@ -113,7 +113,7 @@ public class AccountService {
         return "." + lastCount;
     }
 
-    public static String saveGrnDetail(GrnDetail detail, Grn grn, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
+    public static String saveGrnDetail(GrnDetail detail, Grn grn, HashMap<Integer, Integer> map,Integer user, Connection accConnection) throws SQLException {
         detail.setItemNo(map.get(2) + "");
         AccountController.getInstance().saveGrnDetail(detail, accConnection);
 
@@ -260,22 +260,22 @@ public class AccountService {
 
     }
 
-    public static HashMap<Integer, Object> saveAccountLedgerWithSupplierNbtVat(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, Connection accConnection) throws SQLException {
-        HashMap<Integer, Object> ledgerMap = AccountController.getInstance().saveSupplierAccountLedger(grn, supplierMap, grnIndex, accConnection);
+    public static HashMap<Integer, Object> saveAccountLedgerWithSupplierNbtVat(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex,Integer user, Connection accConnection) throws SQLException {
+        HashMap<Integer, Object> ledgerMap = AccountController.getInstance().saveSupplierAccountLedger(grn, supplierMap, grnIndex,user, accConnection);
         if (grn.getNbtValue().doubleValue() > 0) {
             //save nbt account
-            AccountController.getInstance().saveNbtForLedger(grn, supplierMap, grnIndex, ledgerMap, accConnection);
+            AccountController.getInstance().saveNbtForLedger(grn, supplierMap, grnIndex, ledgerMap,user, accConnection);
         }
         if (grn.getVatValue().doubleValue() > 0) {
             //save vat account
-            AccountController.getInstance().saveVatForLedger(grn, supplierMap, grnIndex, ledgerMap, accConnection);
+            AccountController.getInstance().saveVatForLedger(grn, supplierMap, grnIndex, ledgerMap,user, accConnection);
 
         }
         return ledgerMap;
     }
 
-    public static Integer saveAccLedgerWithItem(GrnDetail detail, int branch, HashMap<Integer, Integer> map, HashMap<Integer, Object> ledgerMap, Connection accConnection) throws SQLException {
-        return AccountController.getInstance().saveAccLedgerItem(detail, branch, map, ledgerMap, accConnection);
+    public static Integer saveAccLedgerWithItem(GrnDetail detail, int branch, HashMap<Integer, Integer> map, HashMap<Integer, Object> ledgerMap,Integer user, Connection accConnection) throws SQLException {
+        return AccountController.getInstance().saveAccLedgerItem(detail, branch, map, ledgerMap,user, accConnection);
     }
 
     public static Integer saveTypeIndexDetail(String masterRef, String type, Integer accIndex, Integer accountIndex, Connection operaConnection) throws SQLException {
@@ -337,8 +337,8 @@ public class AccountService {
 
     }
 
-    static HashMap<Integer, Integer> saveInvoice(Invoice invoice, HashMap<Integer, Integer> customerMap, Integer vehicle, Connection accConnection) throws SQLException {
-        HashMap<Integer, Integer> map = AccountController.getInstance().saveInvoice(invoice, customerMap, vehicle, accConnection);
+    static HashMap<Integer, Integer> saveInvoice(Invoice invoice, HashMap<Integer, Integer> customerMap, Integer vehicle,Integer user, Connection accConnection) throws SQLException {
+        HashMap<Integer, Integer> map = AccountController.getInstance().saveInvoice(invoice, customerMap, vehicle,user, accConnection);
         if (map.size() <= 0) {
             throw new RuntimeException("Grn Save fail !");
         }
@@ -415,7 +415,7 @@ public class AccountService {
         return AccountController.getInstance().savePayment(payment, accConnection);
     }
 
-    static void saveCustomerLedger(PaymentDetail paymentDetail1, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap, Connection accConnection) throws SQLException {
+    static void saveCustomerLedger(PaymentDetail paymentDetail1, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap,Integer user, Connection accConnection) throws SQLException {
         TTypeIndexDetail invTypeIndexDetail = CheckTypeIndexDetail(Constant.INVOICE, paymentDetail1.getInvoice() + "", accConnection);
         if (invTypeIndexDetail.getType() == null) {
             throw new RuntimeException("Can't find invoice (" + paymentDetail1.getInvoice() + ") from Account System !");
@@ -424,7 +424,7 @@ public class AccountService {
         if (saveCustomerLedger <= 0) {
             throw new RuntimeException("Customer Ledger Save fail !");
         }
-        Integer saveAccountLedger = AccountController.getInstance().saveAccountLedgerCustomer(paymentDetail1, paymentIndex, payment, invTypeIndexDetail, customerTypeIndexDetail, numberMap, accConnection);
+        Integer saveAccountLedger = AccountController.getInstance().saveAccountLedgerCustomer(paymentDetail1, paymentIndex, payment, invTypeIndexDetail, customerTypeIndexDetail, numberMap,user, accConnection);
         if (saveAccountLedger <= 0) {
             throw new RuntimeException("Account Ledger Customer Save fail !");
         }
@@ -435,14 +435,14 @@ public class AccountService {
 
     }
 
-    static void savePaymentInformation(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap, Connection accConnection) throws SQLException {
+    static void savePaymentInformation(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap,Integer user, Connection accConnection) throws SQLException {
         //save payment information table
         Integer savePaymentInformation = savePaymentInformation(paymentInformation, paymentIndex, payment, accConnection);
         if (savePaymentInformation <= 0) {
             throw new RuntimeException("Payment Information Save Fail !");
         }
         // payment save acc ledger
-        Integer savePaymentAccLedger = AccountController.getInstance().savePaymentAccLedger(paymentInformation, paymentIndex, payment, customerTypeIndexDetail, numberMap, accConnection);
+        Integer savePaymentAccLedger = AccountController.getInstance().savePaymentAccLedger(paymentInformation, paymentIndex, payment, customerTypeIndexDetail, numberMap, user,accConnection);
     }
 
     private static Integer savePaymentInformation(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, Connection accConnection) throws SQLException {
@@ -463,6 +463,7 @@ public class AccountService {
             paymentInformation.setCardReader(null);
             paymentInformation.setCardType(null);
             paymentInformation.setPayment(paymentIndex);
+            paymentInformation.setNumber(paymentInformation.getNumber());
             return AccountController.getInstance().savePaymentInformation(paymentInformation, accConnection);
             
         } else if (paymentInformation.getType().equals(Constant.PAYMENT_CARD)) {
@@ -472,6 +473,7 @@ public class AccountService {
             paymentInformation.setBankBranch(map.get(2)+"");
             paymentInformation.setCardType(cardTypeIndex+"");
             paymentInformation.setPayment(paymentIndex);
+            paymentInformation.setNumber(paymentInformation.getNumber());
             Integer cardReaderIndex=AccountController.getInstance().checkCardReader(paymentInformation.getCardReader(),payment.getBranch(),accConnection);
             if (cardReaderIndex<=0) {
                 throw new RuntimeException("Card Reader Setting is empty !");
@@ -505,6 +507,10 @@ public class AccountService {
 
     private static Integer saveCardType(String cardType, Connection accConnection) throws SQLException {
         return AccountController.getInstance().saveCardType(cardType,accConnection);
+    }
+
+    static Integer checkLoginUser(String name, String pswd, Connection accConnection) throws SQLException {
+        return AccountController.getInstance().checkLoginUser(name,pswd,accConnection);
     }
 
 }

@@ -53,10 +53,13 @@ public class PaymentInformation implements Serializable {
     @Column(name = "card_reader")
     private String cardReader;
 
+    @Column(name = "munber")
+    private String number;
+
     public PaymentInformation() {
     }
 
-    public PaymentInformation(Integer indexNo, Integer payment, String type, String chequeDate, BigDecimal amount, String bank, String bankBranch, String cardType, String cardReader) {
+    public PaymentInformation(Integer indexNo, Integer payment, String type, String chequeDate, BigDecimal amount, String bank, String bankBranch, String cardType, String cardReader, String number) {
         this.indexNo = indexNo;
         this.payment = payment;
         this.type = type;
@@ -66,7 +69,9 @@ public class PaymentInformation implements Serializable {
         this.bankBranch = bankBranch;
         this.cardType = cardType;
         this.cardReader = cardReader;
+        this.number = number;
     }
+
 
     public Integer getIndexNo() {
         return indexNo;
@@ -140,4 +145,11 @@ public class PaymentInformation implements Serializable {
         this.cardReader = cardReader;
     }
 
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
 }

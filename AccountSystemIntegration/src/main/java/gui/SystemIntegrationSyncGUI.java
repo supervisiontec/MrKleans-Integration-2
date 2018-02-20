@@ -19,10 +19,12 @@ import sync_service.SyncService;
  */
 public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
+    Integer loginUser=-1;
     public SystemIntegrationSyncGUI() {
         initComponents();
 
         initOthers();
+        lblProcess.setVisible(false);
         
         try {
             getDetailCount(txtDate.getText());
@@ -32,17 +34,17 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         }
     }
 
-    public void executeGrn(String date) throws SQLException {
-        SyncService.getInstance().executeGrn(date);
+    public void executeGrn(String date,Integer loginUser1) throws SQLException {
+        SyncService.getInstance().executeGrn(date,loginUser1);
         getDetailCount(date);
     }
 
-    private void executeInvoice(String date) throws SQLException {
-        SyncService.getInstance().executeInvoice(date);
+    private void executeInvoice(String date, Integer loginUser1) throws SQLException {
+        SyncService.getInstance().executeInvoice(date,loginUser1);
         getDetailCount(date);
     }
-    private void executePayment(String date) throws SQLException {
-        SyncService.getInstance().executePayment(date);
+    private void executePayment(String date, Integer loginUser1) throws SQLException {
+        SyncService.getInstance().executePayment(date,loginUser1);
         getDetailCount(date);
     }
     private void getDetailCount(String date) throws SQLException {
@@ -66,6 +68,10 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         TextAreaOutputStream textAreaOutputStream = new TextAreaOutputStream(txtLog);
         System.setOut(new PrintStream(textAreaOutputStream));
     }
+    public void setLoginUser(Integer loginUser) {
+        this.loginUser=loginUser;
+        System.out.println("login User - "+loginUser);
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -79,6 +85,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         btnInvoice = new javax.swing.JButton();
         btnPayment = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        lblProcess = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(550, 330));
@@ -124,22 +131,30 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Date :");
 
+        lblProcess.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        lblProcess.setForeground(new java.awt.Color(0, 0, 0));
+        lblProcess.setText("processing . . .");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btnPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btnGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(425, 425, 425)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 759, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(19, Short.MAX_VALUE))
@@ -148,10 +163,12 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(6, 6, 6)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnClear)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnClear)
+                        .addComponent(lblProcess)))
                 .addGap(10, 10, 10)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -174,12 +191,19 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         txtLog.setText("");
+        try {
+            getDetailCount(txtDate.getText());
+        } catch (SQLException ex) {
+            System.out.println("get detail count function not support !");
+            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoiceActionPerformed
         try {
-
-            executeInvoice(txtDate.getText());
+            lblProcess.setVisible(true);
+            executeInvoice(txtDate.getText(),loginUser);
+            lblProcess.setVisible(false);
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -187,16 +211,20 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
     private void btnGrnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrnActionPerformed
         try {
-
-            executeGrn(txtDate.getText());
+            lblProcess.setVisible(true);
+            executeGrn(txtDate.getText(),loginUser);
+            lblProcess.setVisible(false);
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }//GEN-LAST:event_btnGrnActionPerformed
 
     private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
         try {
-            executePayment(txtDate.getText());
+            lblProcess.setVisible(true);
+            executePayment(txtDate.getText(),loginUser);
+            lblProcess.setVisible(false);
         } catch (SQLException ex) {
             Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -216,6 +244,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     private javax.swing.JButton btnPayment;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblProcess;
     private javax.swing.JTextField txtDate;
     private javax.swing.JTextArea txtLog;
     // End of variables declaration//GEN-END:variables
