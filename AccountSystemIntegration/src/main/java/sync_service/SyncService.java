@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import model.operation_model.Grn;
 import model.operation_model.Invoice;
 import model.operation_model.Payment;
+import model.operation_model.StockAdjustment;
 import service.OperationService;
 import service.TransactionService;
 
@@ -88,6 +89,22 @@ public class SyncService {
 
     public Integer checkLoginUser(String name, String pswd) throws SQLException {
         return TransactionService.getInstance().checkLoginUser(name,pswd);
+    }
+
+    public Integer getStockAdjustmentCount(String date) throws SQLException {
+        return operationService.getNotStockAdjustmentCount(date);
+    }
+
+    public void executeStockAdjustment(String date, Integer user) throws SQLException {
+        ArrayList<StockAdjustment> stockAdjustmentList = operationService.getNotCheckStockAdjustmentList(date);
+        if (stockAdjustmentList.isEmpty()) {
+            System.out.println("Integration Stock Adjustment is empty!");
+        } else {
+            System.out.println("Finded " + stockAdjustmentList.size() + " StockAdjustment to Integrate with account System !");
+        }
+        for (StockAdjustment adjustment : stockAdjustmentList) {
+            TransactionService.getInstance().saveStockAdjustment(adjustment,user);
+        }
     }
 
 }

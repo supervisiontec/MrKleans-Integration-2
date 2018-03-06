@@ -35,7 +35,7 @@ public class MAccAccount implements Serializable {
     private String name;
 
     @Basic(optional = false)
-    @Column(name = "level")
+    @Column(name = "`level`")
     private String level;
 
     @Basic(optional = false)
@@ -47,7 +47,7 @@ public class MAccAccount implements Serializable {
     private boolean cop;
 
     @Basic(optional = false)
-    @Column(name = "user")
+    @Column(name = "`user`")
     private int user;
 
     @Basic(optional = false)

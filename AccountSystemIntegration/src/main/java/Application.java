@@ -1,5 +1,4 @@
 
-import gui.SystemIntegrationSyncGUI;
 import java.sql.SQLException;
 
 /**
@@ -8,7 +7,7 @@ import java.sql.SQLException;
  */
 public class Application {
 
-    private static SystemIntegrationSyncGUI systemIntegrationSyncGUI = null;
+//    private static final SystemIntegrationSyncGUI systemIntegrationSyncGUI = null;
 
     public static void main(String[] args) throws SQLException {
         Login login = new Login();

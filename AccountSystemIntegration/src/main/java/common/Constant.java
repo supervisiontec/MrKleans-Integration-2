@@ -20,10 +20,12 @@ public interface Constant {
     public static final String CHEQUE_IN_HAND = "cheque_in_hand";
     public static final String ITEM_DISCOUNT_OUT = "item_discount_out";
     public static final String ITEM_SALES_INCOME = "item_sales";
+    public static final String SERVICE_SALES_INCOME = "service_sales";
     public static final String NBT_ACCOUNT_OUT = "nbt_account_out";
     public static final String VAT_ACCOUNT_OUT = "vat_account_out";
     public static final String NBT_ACCOUNT_IN = "nbt_account_in";
     public static final String VAT_ACCOUNT_IN = "vat_account_in";
+    public static final String STOCK_ADJUSTMENT_CONTROL_ACCOUNT = "stock_adjustment_contol_account";
 //    public static final String UNREALIZED_ISSUED = "unrealized_issued";
 //    public static final String UNREALIZED_RECEIVED = "unrealized_received";
 //    public static final String OVER_PAYMENT_ISSUED = "over_payment_issue";
@@ -48,6 +50,7 @@ public interface Constant {
     public static final String SYSTEM_INTEGRATION_GRN = "SYSTEM_INTEGRATION_GRN";
     public static final String SYSTEM_INTEGRATION_INVOICE = "SYSTEM_INTEGRATION_INVOICE";
     public static final String SYSTEM_INTEGRATION_PAYMENT = "SYSTEM_INTEGRATION_PAYMENT";
+    public static final String SYSTEM_INTEGRATION_STOCK_ADJUSTMENT = "SYSTEM_INTEGRATION_STOCK_ADJUSTMENT";
     
     //status
     public static final String STATUS_APPROVED = "APPROVED";
@@ -78,6 +81,7 @@ public interface Constant {
     public static final String CODE_INTEGRATION_GRN = "ISGRN";
     public static final String CODE_INTEGRATION_INVOICE = "ISINV";
     public static final String CODE_INTEGRATION_PAYMENT = "ISPMT";
+    public static final String CODE_INTEGRATION_STOCK_ADJUSTMENT = "ISSTKAJM";
 //    public static final String CODE_JOURNAL = "JNL";
 //    public static final String CODE_BANK_RECONCILIATION = "RECON";
 //    public static final String CODE_SUPPLIER_PAYMENT = "SUPPAY";

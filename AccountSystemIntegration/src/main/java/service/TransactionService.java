@@ -19,6 +19,7 @@ import model.operation_model.InvoiceDetail;
 import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
+import model.operation_model.StockAdjustment;
 
 /**
  *
@@ -229,7 +230,7 @@ public class TransactionService {
                 vehicleIndex = null;
             }
 //          save invoice
-            HashMap<Integer, Integer> invoiceMap = AccountService.saveInvoice(invoice, customerMap, vehicleIndex, user, accConnection);
+            HashMap<Integer, Integer> invoiceMap = AccountService.saveInvoice(invoice, invoiceDetail, customerMap, vehicleIndex, user, accConnection);
 //
 //          save item
             HashMap<Integer, Integer> itemMap = new HashMap<>();
@@ -359,7 +360,7 @@ public class TransactionService {
                 throw new RuntimeException("Payment Update fail !");
             }
 
-             System.out.println(" ");
+            System.out.println(" ");
             //commit
             operaConnection.commit();
             accConnection.commit();
@@ -423,4 +424,66 @@ public class TransactionService {
 
     }
 
+    public void saveStockAdjustment(StockAdjustment adjustment, Integer user) {
+        Connection operaConnection = null;
+        Connection accConnection = null;
+        try {
+            //Open a connection
+            operaConnection = operationDataSourceWrapper.getConnection();
+            accConnection = accountDataSourceWrapper.getConnection();
+
+            //Set auto commit as false.
+            operaConnection.setAutoCommit(false);
+            accConnection.setAutoCommit(false);
+
+//             Execute a query to create statment
+            HashMap<Integer, Integer> itemMap = new HashMap<>();
+            TTypeIndexDetail typeIndexDetailItem = AccountService.CheckTypeIndexDetail(Constant.ITEM, adjustment.getItemNo(), accConnection);
+            if (typeIndexDetailItem.getType() == null) {
+
+                itemMap = AccountService.saveItem(adjustment, accConnection);
+                //type index detail save with item
+                Integer typeIndexId = AccountService.saveTypeIndexDetail(adjustment.getItemNo(), Constant.ITEM, itemMap.get(1), itemMap.get(2), accConnection);
+
+                if (typeIndexId < 0) {
+                    throw new RuntimeException("Type Index detail save fail !");
+                }
+                System.out.println("New Item( " + adjustment.getItemName() + " ) Save Success !");
+            } else {
+                itemMap.put(1, typeIndexDetailItem.getAccountRefId());
+                itemMap.put(2, typeIndexDetailItem.getAccountIndex());
+            }
+            int saveStockAdjustment = AccountService.saveStockAdjustment(adjustment,accConnection);
+            if (saveStockAdjustment<=0) {
+                throw new RuntimeException("Stock Adjustment save fail !");
+            }
+            Integer saveIndex=AccountService.saveStockAdjustmentToAccount(adjustment,user,saveStockAdjustment,accConnection);
+
+            System.out.println("Stock Adjustment Save Success ! ");
+            System.out.println(" ");
+            //commit
+            operaConnection.commit();
+            accConnection.commit();
+
+            //Clean-up environment
+            operaConnection.close();
+            accConnection.close();
+
+        } catch (Exception e) {
+            try {
+                System.out.println("COMPILE ERROR ! , check the data and try again !");
+                System.out.println(e);
+                if (operaConnection != null) {
+                    operaConnection.rollback();
+                }
+                if (accConnection != null) {
+                    accConnection.rollback();
+                }
+                System.out.println("Transactions Rollbacked !");
+            } catch (SQLException se2) {
+                System.out.println("Can't find database Connections !");
+
+            }
+        }
+    }
 }

@@ -19,13 +19,14 @@ import sync_service.SyncService;
  */
 public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
-    Integer loginUser=-1;
+    Integer loginUser = -1;
+
     public SystemIntegrationSyncGUI() {
         initComponents();
 
         initOthers();
-        lblProcess.setVisible(false);
-        
+        lblProcess.setText("");
+
         try {
             getDetailCount(txtDate.getText());
         } catch (SQLException ex) {
@@ -34,28 +35,40 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         }
     }
 
-    public void executeGrn(String date,Integer loginUser1) throws SQLException {
-        SyncService.getInstance().executeGrn(date,loginUser1);
+    public void executeGrn(String date, Integer loginUser1) throws SQLException {
+        SyncService.getInstance().executeGrn(date, loginUser1);
         getDetailCount(date);
     }
 
     private void executeInvoice(String date, Integer loginUser1) throws SQLException {
-        SyncService.getInstance().executeInvoice(date,loginUser1);
+        SyncService.getInstance().executeInvoice(date, loginUser1);
         getDetailCount(date);
     }
+
     private void executePayment(String date, Integer loginUser1) throws SQLException {
-        SyncService.getInstance().executePayment(date,loginUser1);
+        SyncService.getInstance().executePayment(date, loginUser1);
         getDetailCount(date);
     }
+    
+    private void executeStockAdjustment(String date, Integer loginUser) throws SQLException {
+        SyncService.getInstance().executeStockAdjustment(date, loginUser);
+        getDetailCount(date);
+        
+    }
+
     private void getDetailCount(String date) throws SQLException {
-        Integer grnCount=SyncService.getInstance().getGrnCount(date);
-        btnGrn.setText("GRN"+" - "+grnCount);
+        Integer stockAdjustmentCount = SyncService.getInstance().getStockAdjustmentCount(date);
+        btnStockAdjust.setText("Stock Adjustment" + " - " + stockAdjustmentCount);
         
-        Integer invoiceCount=SyncService.getInstance().getInvoiceCount(date);
-        btnInvoice.setText("Invoice"+" - "+invoiceCount);
-        
-        Integer paymentCount=SyncService.getInstance().getPaymentCount(date);
-        btnPayment.setText("Payment"+" - "+paymentCount);
+        Integer grnCount = SyncService.getInstance().getGrnCount(date);
+        btnGrn.setText("GRN" + " - " + grnCount);
+
+        Integer invoiceCount = SyncService.getInstance().getInvoiceCount(date);
+        btnInvoice.setText("Invoice" + " - " + invoiceCount);
+
+        Integer paymentCount = SyncService.getInstance().getPaymentCount(date);
+        btnPayment.setText("Payment" + " - " + paymentCount);
+       
     }
 
     @SuppressWarnings("unchecked")
@@ -68,9 +81,10 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         TextAreaOutputStream textAreaOutputStream = new TextAreaOutputStream(txtLog);
         System.setOut(new PrintStream(textAreaOutputStream));
     }
+
     public void setLoginUser(Integer loginUser) {
-        this.loginUser=loginUser;
-        System.out.println("login User - "+loginUser);
+        this.loginUser = loginUser;
+        System.out.println("login User - " + loginUser);
     }
 
     @SuppressWarnings("unchecked")
@@ -86,6 +100,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         btnPayment = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         lblProcess = new javax.swing.JLabel();
+        btnStockAdjust = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(550, 330));
@@ -135,29 +150,37 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         lblProcess.setForeground(new java.awt.Color(0, 0, 0));
         lblProcess.setText("processing . . .");
 
+        btnStockAdjust.setText("Stock Adjustment");
+        btnStockAdjust.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStockAdjustActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnStockAdjust, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
+                    .addComponent(btnGrn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnInvoice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPayment, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(33, 33, 33)
                         .addComponent(lblProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(38, 38, 38)
                         .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 759, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(19, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 682, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -169,16 +192,18 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
                         .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnClear)
                         .addComponent(lblProcess)))
-                .addGap(10, 10, 10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnStockAdjust)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnGrn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnInvoice)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnPayment))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(16, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -200,35 +225,46 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoiceActionPerformed
+        lblProcess.setText("processing . . .");
         try {
-            lblProcess.setVisible(true);
-            executeInvoice(txtDate.getText(),loginUser);
-            lblProcess.setVisible(false);
+            executeInvoice(txtDate.getText(), loginUser);
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
+        lblProcess.setText("");
     }//GEN-LAST:event_btnInvoiceActionPerformed
 
     private void btnGrnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrnActionPerformed
         try {
-            lblProcess.setVisible(true);
-            executeGrn(txtDate.getText(),loginUser);
-            lblProcess.setVisible(false);
+            lblProcess.setText("processing . . .");
+            executeGrn(txtDate.getText(), loginUser);
+            lblProcess.setText("");
         } catch (SQLException ex) {
             java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }//GEN-LAST:event_btnGrnActionPerformed
 
     private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
         try {
-            lblProcess.setVisible(true);
-            executePayment(txtDate.getText(),loginUser);
-            lblProcess.setVisible(false);
+            lblProcess.setText("processing . . .");
+            executePayment(txtDate.getText(), loginUser);
+            lblProcess.setText("");
         } catch (SQLException ex) {
             Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnPaymentActionPerformed
+
+    private void btnStockAdjustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStockAdjustActionPerformed
+        try {
+            lblProcess.setText("processing . . .");
+            executeStockAdjustment(txtDate.getText(), loginUser);
+            lblProcess.setText("");
+        } catch (SQLException ex) {
+            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }//GEN-LAST:event_btnStockAdjustActionPerformed
 
     /**
      * @param args the command line arguments
@@ -242,6 +278,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     private javax.swing.JButton btnGrn;
     private javax.swing.JButton btnInvoice;
     private javax.swing.JButton btnPayment;
+    private javax.swing.JButton btnStockAdjust;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblProcess;

@@ -29,6 +29,7 @@ import model.operation_model.InvoiceDetail;
 import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
+import model.operation_model.StockAdjustment;
 import service.AccountService;
 
 /**
@@ -39,14 +40,14 @@ public class AccountController {
 
     private static AccountController instance;
 
-    public static HashMap<Integer, Object> getAccLedgerNumber(Integer branch, Connection accConnection) throws SQLException {
+    public static HashMap<Integer, Object> getAccLedgerNumber(Integer branch, String type, Connection accConnection) throws SQLException {
 //        get branch
         MBranch branchModel = getBranch(branch, accConnection);
         if (branchModel == null) {
             throw new RuntimeException("Can't find Branch !");
         }
 //        getNumber
-        Integer nextNumber = getNextNumber(branch, Constant.SYSTEM_INTEGRATION_PAYMENT, accConnection);
+        Integer nextNumber = getNextNumber(branch, type, accConnection);
         if (nextNumber < 0) {
             throw new RuntimeException("Next number generate fail !");
         }
@@ -62,17 +63,45 @@ public class AccountController {
         return map;
     }
 
+    public static int saveStockAdjustment(StockAdjustment adjustment, Connection connection) throws SQLException {
+        String insertSql = "insert into t_stock_adjustment (item_no,item_name,item_unit,barcode,\n"
+                + "enter_date,enter_time,updated_date,updated_time,cost_price,qty,branch,ref_no,form_type)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
+        preparedStatement.setString(1, adjustment.getItemNo());
+        preparedStatement.setString(2, adjustment.getItemName());
+        preparedStatement.setString(3, adjustment.getItemUnit());
+        preparedStatement.setString(4, adjustment.getBarcode());
+        preparedStatement.setString(5, adjustment.getEnterDate());
+        preparedStatement.setString(6, adjustment.getEnterTime());
+        preparedStatement.setString(7, adjustment.getUpdatedDate());
+        preparedStatement.setString(8, adjustment.getUpdatedTime());
+        preparedStatement.setBigDecimal(9, adjustment.getCostPrice());
+        preparedStatement.setBigDecimal(10, adjustment.getQty());
+        preparedStatement.setInt(11, adjustment.getBranch());
+        preparedStatement.setString(12, adjustment.getRefNo());
+        preparedStatement.setString(13, adjustment.getFormType());
+
+        preparedStatement.executeUpdate();
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+        while (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return -1;
+
+    }
+
     public AccountController() throws SQLException {
     }
 
-    public Integer saveNbtForLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, HashMap<Integer, Object> ledgerMap, Integer user,Connection accConnection) throws SQLException {
+    public Integer saveNbtForLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, HashMap<Integer, Object> ledgerMap, Integer user, Connection accConnection) throws SQLException {
         Integer vatAccount = getSubAccountOf(Constant.VAT_ACCOUNT_OUT, accConnection);
         return saveAccLedgerVatAndNbt(grn, supplierMap, grnIndex, "System Integration GRN save VAT !", vatAccount, ledgerMap, user, accConnection);
     }
 
-    public Integer saveVatForLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, HashMap<Integer, Object> ledgerMap,Integer user, Connection accConnection) throws SQLException {
+    public Integer saveVatForLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, HashMap<Integer, Object> ledgerMap, Integer user, Connection accConnection) throws SQLException {
         Integer vatAccount = getSubAccountOf(Constant.NBT_ACCOUNT_OUT, accConnection);
-        return saveAccLedgerVatAndNbt(grn, supplierMap, grnIndex, "System Integration GRN save NBT !", vatAccount, ledgerMap,user, accConnection);
+        return saveAccLedgerVatAndNbt(grn, supplierMap, grnIndex, "System Integration GRN save NBT !", vatAccount, ledgerMap, user, accConnection);
     }
 
     public static AccountController getInstance() throws SQLException {
@@ -443,16 +472,6 @@ public class AccountController {
         preparedStatement.executeUpdate();
     }
 
-    public void updateItemAccount(GrnDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
-        String insertSql = "UPDATE m_acc_account set name=? \n"
-                + "WHERE index_no=?";
-        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
-        preparedStatement.setString(1, detail.getItemName());
-        preparedStatement.setInt(2, map.get(1));
-
-        preparedStatement.executeUpdate();
-    }
-
     public void updateItemUnitMaster(GrnDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
         String insertSql = "UPDATE m_item_units set name=?\n"
                 + "WHERE item_unit_type=? and item=?";
@@ -482,7 +501,7 @@ public class AccountController {
         return preparedStatement.executeUpdate();
     }
 
-    public HashMap<Integer, Object> saveSupplierAccountLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex,Integer user, Connection accConnection) throws SQLException {
+    public HashMap<Integer, Object> saveSupplierAccountLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, Integer user, Connection accConnection) throws SQLException {
 //        get branch
         MBranch branch = getBranch(grn.getBranch(), accConnection);
         if (branch == null) {
@@ -599,7 +618,7 @@ public class AccountController {
         preparedStatement.executeUpdate();
     }
 
-    public Integer saveAccLedgerItem(GrnDetail detail, int branch, HashMap<Integer, Integer> map, HashMap<Integer, Object> ledgerMap,Integer user, Connection accConnection) throws SQLException {
+    public Integer saveAccLedgerItem(GrnDetail detail, int branch, HashMap<Integer, Integer> map, HashMap<Integer, Object> ledgerMap, Integer user, Connection accConnection) throws SQLException {
         String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
                 + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
                 + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
@@ -745,7 +764,7 @@ public class AccountController {
         preparedStatement.executeUpdate();
     }
 
-    public HashMap<Integer, Integer> saveInvoice(Invoice invoice, HashMap<Integer, Integer> customerMap, Integer vehicle,Integer user, Connection accConnection) throws SQLException {
+    public HashMap<Integer, Integer> saveInvoice(Invoice invoice, List<InvoiceDetail> invDetailList, HashMap<Integer, Integer> customerMap, Integer vehicle, Integer user, Connection accConnection) throws SQLException {
         HashMap<Integer, Integer> map = new HashMap<>();
         Integer jobIndex = saveJobCard(invoice, customerMap, vehicle, accConnection);
         if (jobIndex <= 0) {
@@ -759,7 +778,7 @@ public class AccountController {
         if (customerLedgerIndex <= 0) {
             throw new RuntimeException("Customer Ledger Save fail !");
         }
-        Integer customerAccIndex = saveInvoiceToAccount(invoice, jobIndex, invIndex, customerMap,user, accConnection);
+        Integer customerAccIndex = saveInvoiceToAccount(invoice, invDetailList, jobIndex, invIndex, customerMap, user, accConnection);
         map.put(1, invIndex);
         map.put(2, customerAccIndex);
         map.put(3, jobIndex);
@@ -881,7 +900,7 @@ public class AccountController {
         return -1;
     }
 
-    private Integer saveInvoiceToAccount(Invoice invoice, Integer jobIndex, Integer invIndex, HashMap<Integer, Integer> customerMap,Integer user, Connection accConnection) throws SQLException {
+    private Integer saveInvoiceToAccount(Invoice invoice, List<InvoiceDetail> invDetailList, Integer jobIndex, Integer invIndex, HashMap<Integer, Integer> customerMap, Integer user, Connection accConnection) throws SQLException {
 //        get branch
         MBranch branch = getBranch(invoice.getBranch(), accConnection);
         if (branch == null) {
@@ -901,42 +920,42 @@ public class AccountController {
         }
 
         //save customer account
-        Integer customerAccIndex = saveInvoiceToAccountWithCustomer(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user,accConnection);
+        Integer customerAccIndex = saveInvoiceToAccountWithCustomer(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user, accConnection);
         if (customerAccIndex < 0) {
             throw new RuntimeException("Invoice To Account With Customer Save fail !");
         }
 
         //save discount
         if (invoice.getDiscountAmount().doubleValue() > 0) {
-            Integer discountAccIndex = saveInvoiceToAccountWithDiscount(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber,user, accConnection);
+            Integer discountAccIndex = saveInvoiceToAccountWithDiscount(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user, accConnection);
             if (discountAccIndex < 0) {
                 throw new RuntimeException("Invoice To Account With Discount Save fail !");
             }
         }
         //save NBT
         if (invoice.getNbtValue().doubleValue() > 0) {
-            Integer NBTIndex = saveInvoiceToAccountWithNBT(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber,user, accConnection);
+            Integer NBTIndex = saveInvoiceToAccountWithNBT(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user, accConnection);
             if (NBTIndex < 0) {
                 throw new RuntimeException("NBT Save fail !");
             }
         }
         //save VAT
         if (invoice.getVatValue().doubleValue() > 0) {
-            Integer VATIndex = saveInvoiceToAccountWithVAT(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber,user, accConnection);
+            Integer VATIndex = saveInvoiceToAccountWithVAT(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user, accConnection);
             if (VATIndex < 0) {
                 throw new RuntimeException("VAT Save fail !");
             }
         }
 
         //save sales income
-        Integer salesAccIndex = saveInvoiceToAccountWithSales(invoice, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user,accConnection);
+        Integer salesAccIndex = saveInvoiceToAccountWithSales(invoice, invDetailList, invIndex, customerMap, branch, nextNumber, deleteRefNumber, user, accConnection);
         if (salesAccIndex < 0) {
             throw new RuntimeException("Invoice To Account With Item Sales Save fail !");
         }
         return customerAccIndex;
     }
 
-    private Integer saveInvoiceToAccountWithCustomer(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber,Integer user, Connection accConnection) throws SQLException {
+    private Integer saveInvoiceToAccountWithCustomer(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber, Integer user, Connection accConnection) throws SQLException {
         String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
                 + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
                 + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
@@ -973,7 +992,7 @@ public class AccountController {
         throw new RuntimeException("Invoice To Account With Customer Save fail !");
     }
 
-    private Integer saveInvoiceToAccountWithDiscount(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber,Integer user, Connection accConnection) throws SQLException {
+    private Integer saveInvoiceToAccountWithDiscount(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber, Integer user, Connection accConnection) throws SQLException {
         Integer discountAccount = getSubAccountOf(Constant.ITEM_DISCOUNT_OUT, accConnection);
         if (discountAccount <= 0) {
             throw new RuntimeException("Item Discount Out Account not found !");
@@ -1008,42 +1027,52 @@ public class AccountController {
         return preparedStatement.executeUpdate();
     }
 
-    private Integer saveInvoiceToAccountWithSales(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber,Integer user, Connection accConnection) throws SQLException {
-        Integer itemSalesIncome = getSubAccountOf(Constant.ITEM_SALES_INCOME, accConnection);
-        if (itemSalesIncome <= 0) {
-            throw new RuntimeException("Item Sales Income Account not found !");
-        }
-        String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
-                + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
-                + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
-                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
-        preparedStatement.setInt(1, nextNumber);
-        preparedStatement.setString(2, Constant.CODE_INTEGRATION_INVOICE + "/" + branch.getBranchCode() + "/" + nextNumber);
-        preparedStatement.setString(3, invoice.getEnterDate());
-        preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
-        preparedStatement.setInt(6, invoice.getBranch());
-        preparedStatement.setInt(7, invoice.getBranch());
-        preparedStatement.setInt(8, user);
-        preparedStatement.setBigDecimal(9, new BigDecimal(0));
-        preparedStatement.setBigDecimal(10, invoice.getAmount());
-        preparedStatement.setInt(11, itemSalesIncome);
-        preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_INVOICE);
-        preparedStatement.setString(13, invIndex + "");
-        preparedStatement.setString(14, Constant.SYSTEM_INTEGRATION_INVOICE);
-        preparedStatement.setInt(15, invIndex);
-        preparedStatement.setInt(16, deleteRefNumber);
-        preparedStatement.setString(17, "System Integration Invoice save Item Sales ");
-        preparedStatement.setString(18, null);
-        preparedStatement.setBoolean(19, false);
-        preparedStatement.setBoolean(20, false);
-        preparedStatement.setBoolean(21, false);
+    private Integer saveInvoiceToAccountWithSales(Invoice invoice, List<InvoiceDetail> invDetailList, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber, Integer user, Connection accConnection) throws SQLException {
+        for (InvoiceDetail invoiceDetail : invDetailList) {
+            Integer itemSalesIncome = -1;
+            if ("SERVICE".equals(invoiceDetail.getItemType())) {
+                itemSalesIncome = getSubAccountOf(Constant.SERVICE_SALES_INCOME, accConnection);
+            }
+            if ("STOCK".equals(invoiceDetail.getItemType()) || "NON_STOCK".equals(invoiceDetail.getItemType())) {
+                itemSalesIncome = getSubAccountOf(Constant.ITEM_SALES_INCOME, accConnection);
+            }
+            if (itemSalesIncome <= 0) {
+                throw new RuntimeException("Item Sales Income Account not found !");
+            }
+            String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
+                    + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
+                    + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
+                    + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+            preparedStatement.setInt(1, nextNumber);
+            preparedStatement.setString(2, Constant.CODE_INTEGRATION_INVOICE + "/" + branch.getBranchCode() + "/" + nextNumber);
+            preparedStatement.setString(3, invoice.getEnterDate());
+            preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+            preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            preparedStatement.setInt(6, invoice.getBranch());
+            preparedStatement.setInt(7, invoice.getBranch());
+            preparedStatement.setInt(8, user);
+            preparedStatement.setBigDecimal(9, new BigDecimal(0));
+            preparedStatement.setBigDecimal(10, invoiceDetail.getSalesPrice());
+            preparedStatement.setInt(11, itemSalesIncome);
+            preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_INVOICE);
+            preparedStatement.setString(13, invIndex + "");
+            preparedStatement.setString(14, Constant.SYSTEM_INTEGRATION_INVOICE);
+            preparedStatement.setInt(15, invIndex);
+            preparedStatement.setInt(16, deleteRefNumber);
+            preparedStatement.setString(17, "System Integration Invoice save Item Sales ");
+            preparedStatement.setString(18, null);
+            preparedStatement.setBoolean(19, false);
+            preparedStatement.setBoolean(20, false);
+            preparedStatement.setBoolean(21, false);
 
-        return preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+        }
+        return 1;
+
     }
 
-    private Integer saveInvoiceToAccountWithNBT(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber,Integer user, Connection accConnection) throws SQLException {
+    private Integer saveInvoiceToAccountWithNBT(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber, Integer user, Connection accConnection) throws SQLException {
         Integer nbtAccountIn = getSubAccountOf(Constant.NBT_ACCOUNT_IN, accConnection);
         if (nbtAccountIn <= 0) {
             throw new RuntimeException("NBT Account setting not found !");
@@ -1078,7 +1107,7 @@ public class AccountController {
         return preparedStatement.executeUpdate();
     }
 
-    private Integer saveInvoiceToAccountWithVAT(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber, Integer user,Connection accConnection) throws SQLException {
+    private Integer saveInvoiceToAccountWithVAT(Invoice invoice, Integer invIndex, HashMap<Integer, Integer> customerMap, MBranch branch, Integer nextNumber, Integer deleteRefNumber, Integer user, Connection accConnection) throws SQLException {
         Integer vatAccountIn = getSubAccountOf(Constant.VAT_ACCOUNT_IN, accConnection);
         if (vatAccountIn <= 0) {
             throw new RuntimeException("VAT Account setting not found !");
@@ -1120,16 +1149,6 @@ public class AccountController {
         preparedStatement.setString(1, detail.getItemName());
         preparedStatement.setString(2, detail.getItemName());
         preparedStatement.setInt(3, map.get(2));
-
-        preparedStatement.executeUpdate();
-    }
-
-    public void updateItemAccount(InvoiceDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
-        String insertSql = "UPDATE m_acc_account set name=? \n"
-                + "WHERE index_no=?";
-        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
-        preparedStatement.setString(1, detail.getItemName());
-        preparedStatement.setInt(2, map.get(1));
 
         preparedStatement.executeUpdate();
     }
@@ -1240,13 +1259,11 @@ public class AccountController {
 
     private Integer saveStockLedger(InvoiceDetail detail, Invoice invoice, HashMap<Integer, Integer> itemMap, HashMap<Integer, Integer> invoiceMap, Integer store, Connection accConnection) throws SQLException {
         List<TStockLedger> stockLedgerList = getFifoList(itemMap.get(2), invoice.getEnterDate(), invoice.getBranch(), store, accConnection);
-        System.out.println(stockLedgerList.size()+" size");
-        if (stockLedgerList.size()<=0) {
+        if (stockLedgerList.size() <= 0) {
             throw new RuntimeException("Empty stock Qty for this item (" + detail.getItemName() + ")and " + invoice.getEnterDate() + " !");
         }
         Double invQty = detail.getStockRemoveQty().doubleValue();
         for (TStockLedger tStockLedger : stockLedgerList) {
-            System.out.println(invQty+" - "+tStockLedger.getInQty());
             if (invQty > tStockLedger.getInQty().doubleValue()) {
                 //save tStockLedger total
                 Integer saveT = saveStockLedgerFromInvoice(invoice, itemMap, invoiceMap, tStockLedger.getInQty(), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), store, accConnection);
@@ -1289,7 +1306,6 @@ public class AccountController {
     }
 
     private List<TStockLedger> getFifoList(Integer item, String enterDate, Integer branch, Integer store, Connection accConnection) throws SQLException {
-        System.out.println(item+" - "+enterDate+" - "+branch+" - "+store);
         String query = "select \n"
                 + "   (sum(t_stock_ledger.in_qty)-\n"
                 + "   sum(t_stock_ledger.out_qty)) as qty,\n"
@@ -1373,7 +1389,7 @@ public class AccountController {
         return preparedStatement.executeUpdate();
     }
 
-    public Integer saveAccountLedgerCustomer(PaymentDetail paymentDetail1, Integer paymentIndex, Payment payment, TTypeIndexDetail invTypeIndexDetail, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap,Integer user, Connection accConnection) throws SQLException {
+    public Integer saveAccountLedgerCustomer(PaymentDetail paymentDetail1, Integer paymentIndex, Payment payment, TTypeIndexDetail invTypeIndexDetail, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap, Integer user, Connection accConnection) throws SQLException {
         String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
                 + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
                 + "cheque_date,bank_reconciliation,is_main,is_cheque,reconcile_group)\n"
@@ -1424,7 +1440,7 @@ public class AccountController {
         return preparedStatement.executeUpdate();
     }
 
-    public Integer savePaymentAccLedger(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap,Integer user, Connection accConnection) throws SQLException {
+    public Integer savePaymentAccLedger(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap, Integer user, Connection accConnection) throws SQLException {
         Integer account = -1;
 
         if (paymentInformation.getType().equals(Constant.PAYMENT_CASH)) {
@@ -1597,6 +1613,20 @@ public class AccountController {
         return -1;
     }
 
+    public Integer checkCardType(String cardType, Connection accConnection) throws SQLException {
+        String query = "select m_card_type.index_no \n"
+                + "from m_card_type\n"
+                + "where m_card_type.name=?\n"
+                + "limit 1";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(query);
+        preparedStatement.setString(1, cardType);
+        ResultSet rst = preparedStatement.executeQuery();
+        if (rst.next()) {
+            return rst.getInt(1);
+        }
+        return -1;
+    }
+
     public Integer checkLoginUser(String name, String pswd, Connection accConnection) throws SQLException {
         String query = "select  m_user.index_no as login_user\n"
                 + "from m_user where m_user.username=? and m_user.password=?";
@@ -1608,5 +1638,202 @@ public class AccountController {
             return rst.getInt(1);
         }
         return -1;
+    }
+
+    public Integer saveItemMaster(StockAdjustment adjustment, Integer itemSubAccountOf, Connection connection) throws SQLException {
+        String insertSql = "insert into m_item (name,barcode,print_description,cost_price,\n"
+                + "type,account,unit)\n"
+                + " values (?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
+        preparedStatement.setString(1, adjustment.getItemName());
+        preparedStatement.setString(2, adjustment.getBarcode());
+        preparedStatement.setString(3, adjustment.getItemName());
+        preparedStatement.setBigDecimal(4, adjustment.getCostPrice());
+        preparedStatement.setString(5, Constant.ITEM_STOCK);
+        preparedStatement.setInt(6, itemSubAccountOf);
+        preparedStatement.setString(7, adjustment.getItemUnit());
+
+        preparedStatement.executeUpdate();
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+        while (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return -1;
+    }
+
+    public Integer saveItemUnitMaster(StockAdjustment adjustment, Integer item, Connection connection) throws SQLException {
+        String insertSql = "insert into m_item_units (item,name,unit,qty,sale_price_normal,sale_price_register,cost_price,item_unit_type)\n"
+                + " values (?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, item);
+        preparedStatement.setString(2, adjustment.getItemName());
+        preparedStatement.setString(3, adjustment.getItemUnit());
+        preparedStatement.setBigDecimal(4, adjustment.getQty());
+        preparedStatement.setBigDecimal(5, new BigDecimal(0));
+        preparedStatement.setBigDecimal(6, new BigDecimal(0));
+        preparedStatement.setBigDecimal(7, adjustment.getCostPrice());
+        preparedStatement.setString(8, Constant.ITEM_UNIT_MAIN);
+
+        return preparedStatement.executeUpdate();
+    }
+
+    public Integer saveStockAdjustmentToAccountPlus(StockAdjustment adjustment, Integer stockAccount, Integer stockAdjustmentAccount, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
+        HashMap<Integer, Object> numberMap = getAccLedgerNumber(adjustment.getBranch(), Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT, accConnection);
+
+        //stock account
+        String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
+                + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
+                + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement.setString(2, Constant.CODE_INTEGRATION_STOCK_ADJUSTMENT + "/" + numberMap.get(1).toString() + "/" + Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement.setString(3, adjustment.getEnterDate());
+        preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        preparedStatement.setInt(6, adjustment.getBranch());
+        preparedStatement.setInt(7, adjustment.getBranch());
+        preparedStatement.setInt(8, user);
+        preparedStatement.setBigDecimal(9, adjustment.getCostPrice());
+        preparedStatement.setBigDecimal(10, new BigDecimal(0));
+        preparedStatement.setInt(11, stockAccount);
+        preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setString(13, adjustment.getRefNo());
+        preparedStatement.setString(14, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(15, formIndexNo);
+        preparedStatement.setInt(16, Integer.parseInt(numberMap.get(3).toString()));
+        preparedStatement.setString(17, "System Integration Stock Adjustment save");
+        preparedStatement.setString(18, null);
+        preparedStatement.setBoolean(19, false);
+        preparedStatement.setBoolean(20, false);
+        preparedStatement.setBoolean(21, false);
+
+        preparedStatement.executeUpdate();
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+        int reconsileGroupNo = -1;
+        while (resultSet.next()) {
+            reconsileGroupNo = resultSet.getInt(1);
+        }
+        if (reconsileGroupNo <= 0) {
+            throw new RuntimeException("save Stock Adjustment To Account Plus Qty stock Account save Fail !");
+        }
+        //set reconcile_group number
+        updateAccLedgerReconcileGroupNo(reconsileGroupNo, accConnection);
+
+        //save stock Adjustment Account
+        String sqlStockAdjusment = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
+                + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
+                + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement1 = accConnection.prepareStatement(sqlStockAdjusment);
+        preparedStatement1.setInt(1, Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement1.setString(2, Constant.CODE_INTEGRATION_STOCK_ADJUSTMENT + "/" + numberMap.get(1).toString() + "/" + Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement1.setString(3, adjustment.getEnterDate());
+        preparedStatement1.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement1.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        preparedStatement1.setInt(6, adjustment.getBranch());
+        preparedStatement1.setInt(7, adjustment.getBranch());
+        preparedStatement1.setInt(8, user);
+        preparedStatement1.setBigDecimal(9, new BigDecimal(0));
+        preparedStatement1.setBigDecimal(10, adjustment.getCostPrice());
+        preparedStatement1.setInt(11, stockAdjustmentAccount);
+        preparedStatement1.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement1.setString(13, adjustment.getRefNo());
+        preparedStatement1.setString(14, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement1.setInt(15, formIndexNo);
+        preparedStatement1.setInt(16, Integer.parseInt(numberMap.get(3).toString()));
+        preparedStatement1.setString(17, "System Integration Stock Adjustment (+ Qty)  save");
+        preparedStatement1.setString(18, null);
+        preparedStatement1.setBoolean(19, false);
+        preparedStatement1.setBoolean(20, false);
+        preparedStatement1.setBoolean(21, false);
+
+        return preparedStatement1.executeUpdate();
+
+    }
+
+    public Integer saveStockAdjustmentToAccountMinus(StockAdjustment adjustment, Integer stockAccount, Integer stockAdjustmentAccount, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
+        HashMap<Integer, Object> numberMap = getAccLedgerNumber(adjustment.getBranch(), Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT, accConnection);
+
+        //stock account
+        String insertSql = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
+                + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
+                + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement.setString(2, Constant.CODE_INTEGRATION_STOCK_ADJUSTMENT + "/" + numberMap.get(1).toString() + "/" + Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement.setString(3, adjustment.getEnterDate());
+        preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        preparedStatement.setInt(6, adjustment.getBranch());
+        preparedStatement.setInt(7, adjustment.getBranch());
+        preparedStatement.setInt(8, user);
+        preparedStatement.setBigDecimal(9, new BigDecimal(0));
+        preparedStatement.setBigDecimal(10, adjustment.getCostPrice());
+        preparedStatement.setInt(11, stockAccount);
+        preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setString(13, adjustment.getRefNo());
+        preparedStatement.setString(14, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(15, formIndexNo);
+        preparedStatement.setInt(16, Integer.parseInt(numberMap.get(3).toString()));
+        preparedStatement.setString(17, "System Integration Stock Adjustment save");
+        preparedStatement.setString(18, null);
+        preparedStatement.setBoolean(19, false);
+        preparedStatement.setBoolean(20, false);
+        preparedStatement.setBoolean(21, false);
+
+        preparedStatement.executeUpdate();
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+        int reconsileGroupNo = -1;
+        while (resultSet.next()) {
+            reconsileGroupNo = resultSet.getInt(1);
+        }
+        if (reconsileGroupNo <= 0) {
+            throw new RuntimeException("save Stock Adjustment To Account Plus Qty stock Account save Fail !");
+        }
+        //set reconcile_group number
+        updateAccLedgerReconcileGroupNo(reconsileGroupNo, accConnection);
+
+        //save stock Adjustment Account
+        String sqlStockAdjusment = "insert into t_acc_ledger (number,search_code,transaction_date,`current_date`,`time`,`branch`,\n"
+                + "current_branch,`user`,debit,credit,acc_account,form_name,ref_number,`type`,type_index_no,delete_ref_no,description,\n"
+                + "cheque_date,bank_reconciliation,is_main,is_cheque)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement1 = accConnection.prepareStatement(sqlStockAdjusment);
+        preparedStatement1.setInt(1, Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement1.setString(2, Constant.CODE_INTEGRATION_STOCK_ADJUSTMENT + "/" + numberMap.get(1).toString() + "/" + Integer.parseInt(numberMap.get(2).toString()));
+        preparedStatement1.setString(3, adjustment.getEnterDate());
+        preparedStatement1.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement1.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        preparedStatement1.setInt(6, adjustment.getBranch());
+        preparedStatement1.setInt(7, adjustment.getBranch());
+        preparedStatement1.setInt(8, user);
+        preparedStatement1.setBigDecimal(9, adjustment.getCostPrice());
+        preparedStatement1.setBigDecimal(10, new BigDecimal(0));
+        preparedStatement1.setInt(11, stockAdjustmentAccount);
+        preparedStatement1.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement1.setString(13, adjustment.getRefNo());
+        preparedStatement1.setString(14, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement1.setInt(15, formIndexNo);
+        preparedStatement1.setInt(16, Integer.parseInt(numberMap.get(3).toString()));
+        preparedStatement1.setString(17, "System Integration Stock Adjustment (- Qty)  save");
+        preparedStatement1.setString(18, null);
+        preparedStatement1.setBoolean(19, false);
+        preparedStatement1.setBoolean(20, false);
+        preparedStatement1.setBoolean(21, false);
+
+        return preparedStatement1.executeUpdate();
+
+    }
+
+    private void updateAccLedgerReconcileGroupNo(int reconsileGroupNo, Connection accConnection) throws SQLException {
+        String insertSql = "UPDATE t_acc_ledger set reconcile_group=?\n"
+                + "WHERE index_no=?";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, reconsileGroupNo);
+        preparedStatement.setInt(2, reconsileGroupNo);
+
+        preparedStatement.executeUpdate();
     }
 }

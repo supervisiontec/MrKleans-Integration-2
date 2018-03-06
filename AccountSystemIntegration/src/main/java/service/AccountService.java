@@ -24,6 +24,7 @@ import model.operation_model.InvoiceDetail;
 import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
+import model.operation_model.StockAdjustment;
 
 /**
  *
@@ -101,7 +102,7 @@ public class AccountService {
                 } else if (lastNo < 100) {
                     split[last] = "0" + lastNo;
 
-                }         
+                }
                 String accCode = String.join(".", split);
                 mAccAccount.setAccCode(accCode);
                 AccountController.getInstance().updateAccAccount(mAccAccount, connection);
@@ -113,7 +114,7 @@ public class AccountService {
         return "." + lastCount;
     }
 
-    public static String saveGrnDetail(GrnDetail detail, Grn grn, HashMap<Integer, Integer> map,Integer user, Connection accConnection) throws SQLException {
+    public static String saveGrnDetail(GrnDetail detail, Grn grn, HashMap<Integer, Integer> map, Integer user, Connection accConnection) throws SQLException {
         detail.setItemNo(map.get(2) + "");
         AccountController.getInstance().saveGrnDetail(detail, accConnection);
 
@@ -131,11 +132,8 @@ public class AccountService {
             case Constant.ITEM_STOCK:
                 itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ITEM_SUB_ACCOUNT_OF, connection);
                 break;
-            case Constant.ITEM_SERVICE:
-                itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.SERVICE_ITEM_SUB_ACCOUNT_OF, connection);
-                break;
             case Constant.ITEM_NON_STOCK:
-                itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.SERVICE_ITEM_SUB_ACCOUNT_OF, connection);
+                itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.NON_STOCK_ITEM_SUB_ACCOUNT_OF, connection);
                 break;
             default:
                 break;
@@ -143,35 +141,35 @@ public class AccountService {
         if (itemSubAccountOf < 0) {
             throw new RuntimeException("Item Sub Account of Setting was Empty !");
         }
-        MAccAccount mAccAccount = new MAccAccount();
-        mAccAccount.setIndexNo(null);
-        mAccAccount.setAccType("COMMON");
-        mAccAccount.setCop(false);
-        mAccAccount.setDescription("System Integoration new Item");
-        mAccAccount.setIsAccAccount(true);
-        mAccAccount.setName(detail.getItemName());
-        mAccAccount.setSubAccountOf(itemSubAccountOf);
-        mAccAccount.setUser(1);
-        Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
-        if (accAccountIndex < 0) {
-            throw new RuntimeException("item account save fail !");
-        }
+//        MAccAccount mAccAccount = new MAccAccount();
+//        mAccAccount.setIndexNo(null);
+//        mAccAccount.setAccType("COMMON");
+//        mAccAccount.setCop(false);
+//        mAccAccount.setDescription("System Integoration new Item");
+//        mAccAccount.setIsAccAccount(true);
+//        mAccAccount.setName(detail.getItemName());
+//        mAccAccount.setSubAccountOf(itemSubAccountOf);
+//        mAccAccount.setUser(1);
+//        Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
+//        if (accAccountIndex < 0) {
+//            throw new RuntimeException("item account save fail !");
+//        }
 
 //
-        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, accAccountIndex, connection);
+        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, itemSubAccountOf, connection);
         Integer saveItemUnit = AccountController.getInstance().saveItemUnitMaster(detail, saveItemMaster, connection);
         if (saveItemUnit <= 0) {
             throw new RuntimeException("Item Unit save fail !");
         }
 
         if (Constant.ITEM_STOCK.equals(detail.getItemType()) || Constant.ITEM_NON_STOCK.equals(detail.getItemType())) {
-            if (detail.getReorderMax().doubleValue()>0 || detail.getReorderMin().doubleValue()>0) {
+            if (detail.getReorderMax().doubleValue() > 0 || detail.getReorderMin().doubleValue() > 0) {
                 saveReOrderLevel(saveItemMaster, detail, connection);
             }
         }
 
         HashMap<Integer, Integer> hashMap = new HashMap<>();
-        hashMap.put(1, accAccountIndex);
+        hashMap.put(1, itemSubAccountOf);
         hashMap.put(2, saveItemMaster);
         return hashMap;
     }
@@ -235,47 +233,38 @@ public class AccountService {
 
     public static void updateItem(GrnDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
         updateItemMaster(detail, map, accConnection);
-        updateItemAccount(detail, map, accConnection);
         updateItemUnitMaster(detail, map, accConnection);
 
     }
 
     private static void updateItemMaster(GrnDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
         AccountController.getInstance().updateItemMaster(detail, map, accConnection);
-
-    }
-
-    private static void updateItemAccount(GrnDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
-        AccountController.getInstance().updateItemAccount(detail, map, accConnection);
-
     }
 
     private static void updateItemUnitMaster(GrnDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
         AccountController.getInstance().updateItemUnitMaster(detail, map, accConnection);
-
     }
 
     public static Integer saveSupplierLedger(Grn grn, Integer grnIndex, Integer supplierIndex, Connection accConnection) throws SQLException {
         return AccountController.getInstance().saveSupplierLedger(grn, grnIndex, supplierIndex, accConnection);
-
     }
 
-    public static HashMap<Integer, Object> saveAccountLedgerWithSupplierNbtVat(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex,Integer user, Connection accConnection) throws SQLException {
-        HashMap<Integer, Object> ledgerMap = AccountController.getInstance().saveSupplierAccountLedger(grn, supplierMap, grnIndex,user, accConnection);
+    public static HashMap<Integer, Object> saveAccountLedgerWithSupplierNbtVat(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, Integer user, Connection accConnection) throws SQLException {
+        HashMap<Integer, Object> ledgerMap = AccountController.getInstance().saveSupplierAccountLedger(grn, supplierMap, grnIndex, user, accConnection);
         if (grn.getNbtValue().doubleValue() > 0) {
             //save nbt account
-            AccountController.getInstance().saveNbtForLedger(grn, supplierMap, grnIndex, ledgerMap,user, accConnection);
+            AccountController.getInstance().saveNbtForLedger(grn, supplierMap, grnIndex, ledgerMap, user, accConnection);
         }
         if (grn.getVatValue().doubleValue() > 0) {
             //save vat account
-            AccountController.getInstance().saveVatForLedger(grn, supplierMap, grnIndex, ledgerMap,user, accConnection);
+            AccountController.getInstance().saveVatForLedger(grn, supplierMap, grnIndex, ledgerMap, user, accConnection);
 
         }
         return ledgerMap;
     }
 
-    public static Integer saveAccLedgerWithItem(GrnDetail detail, int branch, HashMap<Integer, Integer> map, HashMap<Integer, Object> ledgerMap,Integer user, Connection accConnection) throws SQLException {
-        return AccountController.getInstance().saveAccLedgerItem(detail, branch, map, ledgerMap,user, accConnection);
+    public static Integer saveAccLedgerWithItem(GrnDetail detail, int branch, HashMap<Integer, Integer> map, HashMap<Integer, Object> ledgerMap, Integer user, Connection accConnection) throws SQLException {
+        return AccountController.getInstance().saveAccLedgerItem(detail, branch, map, ledgerMap, user, accConnection);
     }
 
     public static Integer saveTypeIndexDetail(String masterRef, String type, Integer accIndex, Integer accountIndex, Connection operaConnection) throws SQLException {
@@ -302,7 +291,7 @@ public class AccountService {
         mAccAccount.setCop(false);
         mAccAccount.setDescription("System Integoration new Customer");
         mAccAccount.setIsAccAccount(true);
-        mAccAccount.setName(invoice.getClientRecident() + " - " + invoice.getClientName() + "(" + invoice.getClientNo() + ")");
+        mAccAccount.setName(invoice.getClientName() + "(" + invoice.getClientNo() + ")");
         mAccAccount.setSubAccountOf(supplierSubAccountOf);
         mAccAccount.setUser(1);
         Integer accAccountIndex = saveAccAccount(mAccAccount, accConnection);
@@ -337,8 +326,8 @@ public class AccountService {
 
     }
 
-    static HashMap<Integer, Integer> saveInvoice(Invoice invoice, HashMap<Integer, Integer> customerMap, Integer vehicle,Integer user, Connection accConnection) throws SQLException {
-        HashMap<Integer, Integer> map = AccountController.getInstance().saveInvoice(invoice, customerMap, vehicle,user, accConnection);
+    static HashMap<Integer, Integer> saveInvoice(Invoice invoice, List<InvoiceDetail> invDetailList, HashMap<Integer, Integer> customerMap, Integer vehicle, Integer user, Connection accConnection) throws SQLException {
+        HashMap<Integer, Integer> map = AccountController.getInstance().saveInvoice(invoice, invDetailList, customerMap, vehicle, user, accConnection);
         if (map.size() <= 0) {
             throw new RuntimeException("Grn Save fail !");
         }
@@ -351,16 +340,11 @@ public class AccountService {
 
     public static void updateItemFromInvoice(InvoiceDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
         updateItemMaster(detail, map, accConnection);
-        updateItemAccount(detail, map, accConnection);
         updateItemUnitMaster(detail, map, accConnection);
     }
 
     private static void updateItemMaster(InvoiceDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
         AccountController.getInstance().updateItemMaster(detail, map, accConnection);
-    }
-
-    private static void updateItemAccount(InvoiceDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
-        AccountController.getInstance().updateItemAccount(detail, map, accConnection);
     }
 
     private static void updateItemUnitMaster(InvoiceDetail detail, HashMap<Integer, Integer> map, Connection accConnection) throws SQLException {
@@ -369,26 +353,26 @@ public class AccountService {
 
     static HashMap<Integer, Integer> saveItem(InvoiceDetail detail, Connection connection) throws SQLException {
         Integer itemSubAccountOf = -1;
-
+//
         itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.SERVICE_ITEM_SUB_ACCOUNT_OF, connection);
-        if (itemSubAccountOf < 0) {
-            throw new RuntimeException("Item Sub Account of Setting was Empty !");
-        }
-        MAccAccount mAccAccount = new MAccAccount();
-        mAccAccount.setIndexNo(null);
-        mAccAccount.setAccType("COMMON");
-        mAccAccount.setCop(false);
-        mAccAccount.setDescription("System Integoration new Item");
-        mAccAccount.setIsAccAccount(true);
-        mAccAccount.setName(detail.getItemName());
-        mAccAccount.setSubAccountOf(itemSubAccountOf);
-        mAccAccount.setUser(1);
-        Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
-        if (accAccountIndex < 0) {
-            throw new RuntimeException("item account save fail !");
-        }
+//        if (itemSubAccountOf < 0) {
+//            throw new RuntimeException("Item Sub Account of Setting was Empty !");
+//        }
+//        MAccAccount mAccAccount = new MAccAccount();
+//        mAccAccount.setIndexNo(null);
+//        mAccAccount.setAccType("COMMON");
+//        mAccAccount.setCop(false);
+//        mAccAccount.setDescription("System Integoration new Item");
+//        mAccAccount.setIsAccAccount(true);
+//        mAccAccount.setName(detail.getItemName());
+//        mAccAccount.setSubAccountOf(itemSubAccountOf);
+//        mAccAccount.setUser(1);
+//        Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
+//        if (accAccountIndex < 0) {
+//            throw new RuntimeException("item account save fail !");
+//        }
 
-        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, accAccountIndex, connection);
+        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, itemSubAccountOf, connection);
         if (saveItemMaster <= 0) {
             throw new RuntimeException("Item master save fail !");
         }
@@ -398,7 +382,7 @@ public class AccountService {
         }
 
         HashMap<Integer, Integer> hashMap = new HashMap<>();
-        hashMap.put(1, accAccountIndex);
+        hashMap.put(1, itemSubAccountOf);
         hashMap.put(2, saveItemMaster);
         hashMap.put(3, saveItemUnit);
 
@@ -415,7 +399,7 @@ public class AccountService {
         return AccountController.getInstance().savePayment(payment, accConnection);
     }
 
-    static void saveCustomerLedger(PaymentDetail paymentDetail1, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap,Integer user, Connection accConnection) throws SQLException {
+    static void saveCustomerLedger(PaymentDetail paymentDetail1, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap, Integer user, Connection accConnection) throws SQLException {
         TTypeIndexDetail invTypeIndexDetail = CheckTypeIndexDetail(Constant.INVOICE, paymentDetail1.getInvoice() + "", accConnection);
         if (invTypeIndexDetail.getType() == null) {
             throw new RuntimeException("Can't find invoice (" + paymentDetail1.getInvoice() + ") from Account System !");
@@ -424,25 +408,25 @@ public class AccountService {
         if (saveCustomerLedger <= 0) {
             throw new RuntimeException("Customer Ledger Save fail !");
         }
-        Integer saveAccountLedger = AccountController.getInstance().saveAccountLedgerCustomer(paymentDetail1, paymentIndex, payment, invTypeIndexDetail, customerTypeIndexDetail, numberMap,user, accConnection);
+        Integer saveAccountLedger = AccountController.getInstance().saveAccountLedgerCustomer(paymentDetail1, paymentIndex, payment, invTypeIndexDetail, customerTypeIndexDetail, numberMap, user, accConnection);
         if (saveAccountLedger <= 0) {
             throw new RuntimeException("Account Ledger Customer Save fail !");
         }
     }
 
     static HashMap<Integer, Object> getAccLedgerNumber(Integer branch, Connection accConnection) throws SQLException {
-        return AccountController.getAccLedgerNumber(branch, accConnection);
+        return AccountController.getAccLedgerNumber(branch,Constant.SYSTEM_INTEGRATION_PAYMENT, accConnection);
 
     }
 
-    static void savePaymentInformation(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap,Integer user, Connection accConnection) throws SQLException {
+    static void savePaymentInformation(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, TTypeIndexDetail customerTypeIndexDetail, HashMap<Integer, Object> numberMap, Integer user, Connection accConnection) throws SQLException {
         //save payment information table
         Integer savePaymentInformation = savePaymentInformation(paymentInformation, paymentIndex, payment, accConnection);
         if (savePaymentInformation <= 0) {
             throw new RuntimeException("Payment Information Save Fail !");
         }
         // payment save acc ledger
-        Integer savePaymentAccLedger = AccountController.getInstance().savePaymentAccLedger(paymentInformation, paymentIndex, payment, customerTypeIndexDetail, numberMap, user,accConnection);
+        Integer savePaymentAccLedger = AccountController.getInstance().savePaymentAccLedger(paymentInformation, paymentIndex, payment, customerTypeIndexDetail, numberMap, user, accConnection);
     }
 
     private static Integer savePaymentInformation(PaymentInformation paymentInformation, Integer paymentIndex, Payment payment, Connection accConnection) throws SQLException {
@@ -455,31 +439,31 @@ public class AccountService {
             paymentInformation.setPayment(paymentIndex);
 
             return AccountController.getInstance().savePaymentInformation(paymentInformation, accConnection);
-            
+
         } else if (paymentInformation.getType().equals(Constant.PAYMENT_CHEQUE)) {
             HashMap<Integer, Integer> map = saveBankAndBankBranch(paymentInformation, accConnection);
-            paymentInformation.setBank(map.get(1)+"");
-            paymentInformation.setBankBranch(map.get(2)+"");
+            paymentInformation.setBank(map.get(1) + "");
+            paymentInformation.setBankBranch(map.get(2) + "");
             paymentInformation.setCardReader(null);
             paymentInformation.setCardType(null);
             paymentInformation.setPayment(paymentIndex);
             paymentInformation.setNumber(paymentInformation.getNumber());
             return AccountController.getInstance().savePaymentInformation(paymentInformation, accConnection);
-            
+
         } else if (paymentInformation.getType().equals(Constant.PAYMENT_CARD)) {
             HashMap<Integer, Integer> map = saveBankAndBankBranch(paymentInformation, accConnection);
-            Integer cardTypeIndex=saveCardType(paymentInformation.getCardType(),accConnection);
-            paymentInformation.setBank(map.get(1)+"");
-            paymentInformation.setBankBranch(map.get(2)+"");
-            paymentInformation.setCardType(cardTypeIndex+"");
+            Integer cardTypeIndex = saveCardType(paymentInformation.getCardType(), accConnection);
+            paymentInformation.setBank(map.get(1) + "");
+            paymentInformation.setBankBranch(map.get(2) + "");
+            paymentInformation.setCardType(cardTypeIndex + "");
             paymentInformation.setPayment(paymentIndex);
             paymentInformation.setNumber(paymentInformation.getNumber());
-            Integer cardReaderIndex=AccountController.getInstance().checkCardReader(paymentInformation.getCardReader(),payment.getBranch(),accConnection);
-            if (cardReaderIndex<=0) {
+            Integer cardReaderIndex = AccountController.getInstance().checkCardReader(paymentInformation.getCardReader(), payment.getBranch(), accConnection);
+            if (cardReaderIndex <= 0) {
                 throw new RuntimeException("Card Reader Setting is empty !");
             }
             return AccountController.getInstance().savePaymentInformation(paymentInformation, accConnection);
-            
+
         } else {
             throw new RuntimeException("Payment type is Invalided. Available types are CASH,CHEQUE,CARD !");
         }
@@ -492,7 +476,7 @@ public class AccountService {
             Integer bankIndex = AccountController.getInstance().checkBank(paymentInformation.getBank(), accConnection);
             if (bankIndex <= 0) {
                 //save bank and branch
-                return AccountController.getInstance().saveBankAndBankBranch(paymentInformation.getBank(),paymentInformation.getBankBranch(),accConnection);
+                return AccountController.getInstance().saveBankAndBankBranch(paymentInformation.getBank(), paymentInformation.getBankBranch(), accConnection);
             } else {
                 //save only bank branch
                 Integer bankBranchIndex = AccountController.getInstance().saveBankBranch(paymentInformation.getBankBranch(), bankIndex, accConnection);
@@ -506,11 +490,62 @@ public class AccountService {
     }
 
     private static Integer saveCardType(String cardType, Connection accConnection) throws SQLException {
-        return AccountController.getInstance().saveCardType(cardType,accConnection);
+        Integer checkCardType = AccountController.getInstance().checkCardType(cardType, accConnection);
+        if (checkCardType > 0) {
+            return checkCardType;
+        }
+        return AccountController.getInstance().saveCardType(cardType, accConnection);
     }
 
     static Integer checkLoginUser(String name, String pswd, Connection accConnection) throws SQLException {
-        return AccountController.getInstance().checkLoginUser(name,pswd,accConnection);
+        return AccountController.getInstance().checkLoginUser(name, pswd, accConnection);
+    }
+
+    static HashMap<Integer, Integer> saveItem(StockAdjustment adjustment, Connection connection) throws SQLException {
+        Integer itemSubAccountOf = -1;
+
+        itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ITEM_SUB_ACCOUNT_OF, connection);
+
+        if (itemSubAccountOf < 0) {
+            throw new RuntimeException("Item Sub Account of Setting was Empty !");
+        }
+        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(adjustment, itemSubAccountOf, connection);
+        Integer saveItemUnit = AccountController.getInstance().saveItemUnitMaster(adjustment, saveItemMaster, connection);
+        if (saveItemUnit <= 0) {
+            throw new RuntimeException("Item Unit save fail !");
+        }
+
+        HashMap<Integer, Integer> hashMap = new HashMap<>();
+        hashMap.put(1, itemSubAccountOf);
+        hashMap.put(2, saveItemMaster);
+        return hashMap;
+    }
+
+    static int saveStockAdjustment(StockAdjustment adjustment, Connection accConnection) throws SQLException {
+        return AccountController.saveStockAdjustment(adjustment, accConnection);
+    }
+
+    static Integer saveStockAdjustmentToAccount(StockAdjustment adjustment,Integer user,Integer formIndexNo, Connection accConnection) throws SQLException {
+        Integer stockAccount = -1;
+        Integer stockAdjustmentAccount = -1;
+
+        stockAccount = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ITEM_SUB_ACCOUNT_OF, accConnection);
+        stockAdjustmentAccount = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ADJUSTMENT_CONTROL_ACCOUNT, accConnection);
+
+        if (stockAccount < 0) {
+            throw new RuntimeException("Stock Account Setting was Empty !");
+        }
+        if (stockAdjustmentAccount < 0) {
+            throw new RuntimeException("Stock Adjustment Account Setting was Empty !");
+        }
+        if (adjustment.getQty().doubleValue() > 0) {
+            // plus qty     
+            return AccountController.getInstance().saveStockAdjustmentToAccountPlus(adjustment,stockAccount,stockAdjustmentAccount,user,formIndexNo,accConnection);
+        } else {
+            // minus qty     
+            return AccountController.getInstance().saveStockAdjustmentToAccountMinus(adjustment,stockAccount,stockAdjustmentAccount,user,formIndexNo,accConnection);
+
+        }
     }
 
 }

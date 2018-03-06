@@ -17,6 +17,7 @@ import model.operation_model.InvoiceDetail;
 import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
+import model.operation_model.StockAdjustment;
 
 /**
  *
@@ -74,5 +75,13 @@ public class OperationService {
 
     public Integer getNotCheckPaymentCount(String date) throws SQLException {
         return OperationController.getInstance().getNotCheckPaymentCount(date);
+    }
+
+    public Integer getNotStockAdjustmentCount(String date) throws SQLException {
+        return OperationController.getInstance().getNotCheckStockAdjustmentCount(date);
+    }
+
+    public ArrayList<StockAdjustment> getNotCheckStockAdjustmentList(String date) throws SQLException {
+         return OperationController.getInstance().getNotCheckStockAdjustmentList(date);
     }
 }

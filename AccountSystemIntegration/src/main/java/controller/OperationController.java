@@ -21,6 +21,7 @@ import model.operation_model.InvoiceDetail;
 import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
+import model.operation_model.StockAdjustment;
 import org.apache.log4j.Logger;
 import service.ConnectionService;
 
@@ -345,6 +346,52 @@ public class OperationController {
                 return rst.getInt(1);
             }
             return 0;
+        }
+    }
+
+    public Integer getNotCheckStockAdjustmentCount(String date) throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String query = "select count(stock_adjustment.index_no) as count\n"
+                    + "from stock_adjustment where stock_adjustment.enter_date <= ? and stock_adjustment.`check`=0";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, date);
+            ResultSet rst = preparedStatement.executeQuery();
+            if (rst.next()) {
+                return rst.getInt(1);
+            }
+            return 0;
+        }
+    }
+
+    public ArrayList<StockAdjustment> getNotCheckStockAdjustmentList(String date) throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String query = "select stock_adjustment.*\n"
+                    + "from stock_adjustment where stock_adjustment.enter_date <= ? and stock_adjustment.`check`=0\n";
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, date);
+            ResultSet rst = preparedStatement.executeQuery();
+            ArrayList<StockAdjustment> list = new ArrayList<>();
+            while (rst.next()) {
+                StockAdjustment adjustment = new StockAdjustment();
+                adjustment.setIndexNo(rst.getInt(1));
+                adjustment.setItemNo(rst.getString(2));
+                adjustment.setItemName(rst.getString(3));
+                adjustment.setItemUnit(rst.getString(4));
+                adjustment.setBarcode(rst.getString(5));
+                adjustment.setEnterDate(rst.getString(6));
+                adjustment.setEnterTime(rst.getString(7));
+                adjustment.setUpdatedDate(rst.getString(8));
+                adjustment.setUpdatedTime(rst.getString(9));
+                adjustment.setCostPrice(rst.getBigDecimal(10));
+                adjustment.setQty(rst.getBigDecimal(11));
+                adjustment.setBranch(rst.getInt(12));
+                adjustment.setCheck(rst.getBoolean(13));
+                adjustment.setRefNo(rst.getString(14));
+                adjustment.setFormType(rst.getString(15));
+                list.add(adjustment);
+            }
+            return list;
         }
     }
 
