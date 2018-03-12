@@ -22,6 +22,7 @@ import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
 import model.operation_model.StockAdjustment;
+import model.operation_model.StockAdjustmentDetail;
 import org.apache.log4j.Logger;
 import service.ConnectionService;
 
@@ -126,6 +127,11 @@ public class OperationController {
     }
 
     public ArrayList<Invoice> getNotCheckInvoiceList(String date) throws SQLException {
+         ArrayList<StockAdjustment> pendingAdjustmentList = getNotCheckStockAdjustmentList(date);
+        if (!pendingAdjustmentList.isEmpty()) {
+            System.out.println("There is " + pendingAdjustmentList.size() + " pending Stock Adjustment.first of all integrate Stock Adjustment to Account system !");
+            throw new RuntimeException("There is " + pendingAdjustmentList.size() + " pending Stock Adjustment.first of all integrate Stock Adjustment to Account system !");
+        }
         ArrayList<Grn> pendingGrnList = getNotCheckGrnList(date);
         if (!pendingGrnList.isEmpty()) {
             System.out.println("There is " + pendingGrnList.size() + " pending Grn.first of all integrate grn to Account system !");
@@ -208,11 +214,6 @@ public class OperationController {
     }
 
     public ArrayList<Payment> getNotCheckPaymentList(String date) throws SQLException {
-        ArrayList<Grn> pendingGrnList = getNotCheckGrnList(date);
-        if (!pendingGrnList.isEmpty()) {
-            System.out.println("There is " + pendingGrnList.size() + " pending Grn.first of all integrate grn to Account system !");
-            throw new RuntimeException("There is " + pendingGrnList.size() + " pending Grn.first of all integrate grn to Account system !");
-        }
         ArrayList<Invoice> pendingInvoiceList = getNotCheckInvoiceList(date);
         if (!pendingInvoiceList.isEmpty()) {
             System.out.println("There is " + pendingInvoiceList.size() + " pending Invoice.first of all integrate invoice to Account system !");
@@ -375,24 +376,52 @@ public class OperationController {
             while (rst.next()) {
                 StockAdjustment adjustment = new StockAdjustment();
                 adjustment.setIndexNo(rst.getInt(1));
-                adjustment.setItemNo(rst.getString(2));
-                adjustment.setItemName(rst.getString(3));
-                adjustment.setItemUnit(rst.getString(4));
-                adjustment.setBarcode(rst.getString(5));
-                adjustment.setEnterDate(rst.getString(6));
-                adjustment.setEnterTime(rst.getString(7));
-                adjustment.setUpdatedDate(rst.getString(8));
-                adjustment.setUpdatedTime(rst.getString(9));
-                adjustment.setCostPrice(rst.getBigDecimal(10));
-                adjustment.setQty(rst.getBigDecimal(11));
-                adjustment.setBranch(rst.getInt(12));
-                adjustment.setCheck(rst.getBoolean(13));
-                adjustment.setRefNo(rst.getString(14));
-                adjustment.setFormType(rst.getString(15));
+                adjustment.setEnterDate(rst.getString(2));
+                adjustment.setEnterTime(rst.getString(3));
+                adjustment.setUpdatedDate(rst.getString(4));
+                adjustment.setUpdatedTime(rst.getString(5));
+                adjustment.setBranch(rst.getInt(6));
+                adjustment.setCheck(rst.getBoolean(7));
+                adjustment.setRefNo(rst.getString(8));
+                adjustment.setFormType(rst.getString(9));
                 list.add(adjustment);
             }
             return list;
         }
+    }
+
+    public List<StockAdjustmentDetail> getAdjustmentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
+         String query = "select stock_adjustment_detail.*\n"
+                + "from stock_adjustment_detail where stock_adjustment_detail.stock_adjustment=?\n"
+                 + "order by stock_adjustment_detail.qty asc";
+        PreparedStatement preparedStatement = operaConnection.prepareStatement(query);
+        preparedStatement.setInt(1, indexNo);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        ArrayList<StockAdjustmentDetail> list = new ArrayList<>();
+        while (resultSet.next()) {
+            StockAdjustmentDetail detail = new StockAdjustmentDetail();
+            detail.setIndexNo(resultSet.getInt(1));
+            detail.setStockAdjustment(resultSet.getInt(2));
+            detail.setItemNo(resultSet.getString(3));
+            detail.setItemName(resultSet.getString(4));
+            detail.setItemUnit(resultSet.getString(5));
+            detail.setBarcode(resultSet.getString(6));
+            detail.setCostPrice(resultSet.getBigDecimal(7));
+            detail.setQty(resultSet.getBigDecimal(8));
+            list.add(detail);
+        }
+        return list;
+    }
+
+    public Integer updateAdjustment(Integer indexNo, Connection operaConnection) throws SQLException {
+        String insertSql = "UPDATE stock_adjustment set `check` = true ,updated_date=? , updated_time=?\n"
+                + "WHERE index_no=?";
+        PreparedStatement preparedStatement = operaConnection.prepareStatement(insertSql);
+        preparedStatement.setString(1, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(2, new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        preparedStatement.setInt(3, indexNo);
+
+        return preparedStatement.executeUpdate();
     }
 
 }

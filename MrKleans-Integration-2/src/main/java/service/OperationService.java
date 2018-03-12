@@ -18,6 +18,7 @@ import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
 import model.operation_model.StockAdjustment;
+import model.operation_model.StockAdjustmentDetail;
 
 /**
  *
@@ -43,6 +44,14 @@ public class OperationService {
 
     static List<PaymentInformation> getPaymentInformations(Integer indexNo, Connection operaConnection)throws SQLException {
         return OperationController.getInstance().getPaymentInformations(indexNo, operaConnection);
+    }
+
+    static List<StockAdjustmentDetail> getAdjustmentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
+        return OperationController.getInstance().getAdjustmentDetail(indexNo,operaConnection);
+    }
+
+    static Integer updateAdjustment(Integer indexNo, Connection operaConnection) throws SQLException {
+        return OperationController.getInstance().updateAdjustment(indexNo,operaConnection);
     }
 
     public ArrayList<Grn> getNotCheckGrnList(String date) throws SQLException {

@@ -25,6 +25,7 @@ import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
 import model.operation_model.StockAdjustment;
+import model.operation_model.StockAdjustmentDetail;
 
 /**
  *
@@ -355,22 +356,6 @@ public class AccountService {
         Integer itemSubAccountOf = -1;
 //
         itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.SERVICE_ITEM_SUB_ACCOUNT_OF, connection);
-//        if (itemSubAccountOf < 0) {
-//            throw new RuntimeException("Item Sub Account of Setting was Empty !");
-//        }
-//        MAccAccount mAccAccount = new MAccAccount();
-//        mAccAccount.setIndexNo(null);
-//        mAccAccount.setAccType("COMMON");
-//        mAccAccount.setCop(false);
-//        mAccAccount.setDescription("System Integoration new Item");
-//        mAccAccount.setIsAccAccount(true);
-//        mAccAccount.setName(detail.getItemName());
-//        mAccAccount.setSubAccountOf(itemSubAccountOf);
-//        mAccAccount.setUser(1);
-//        Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
-//        if (accAccountIndex < 0) {
-//            throw new RuntimeException("item account save fail !");
-//        }
 
         Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, itemSubAccountOf, connection);
         if (saveItemMaster <= 0) {
@@ -415,7 +400,7 @@ public class AccountService {
     }
 
     static HashMap<Integer, Object> getAccLedgerNumber(Integer branch, Connection accConnection) throws SQLException {
-        return AccountController.getAccLedgerNumber(branch,Constant.SYSTEM_INTEGRATION_PAYMENT, accConnection);
+        return AccountController.getAccLedgerNumber(branch, Constant.SYSTEM_INTEGRATION_PAYMENT, accConnection);
 
     }
 
@@ -501,7 +486,7 @@ public class AccountService {
         return AccountController.getInstance().checkLoginUser(name, pswd, accConnection);
     }
 
-    static HashMap<Integer, Integer> saveItem(StockAdjustment adjustment, Connection connection) throws SQLException {
+    static HashMap<Integer, Integer> saveItem(StockAdjustmentDetail detail, Connection connection) throws SQLException {
         Integer itemSubAccountOf = -1;
 
         itemSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ITEM_SUB_ACCOUNT_OF, connection);
@@ -509,8 +494,8 @@ public class AccountService {
         if (itemSubAccountOf < 0) {
             throw new RuntimeException("Item Sub Account of Setting was Empty !");
         }
-        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(adjustment, itemSubAccountOf, connection);
-        Integer saveItemUnit = AccountController.getInstance().saveItemUnitMaster(adjustment, saveItemMaster, connection);
+        Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, itemSubAccountOf, connection);
+        Integer saveItemUnit = AccountController.getInstance().saveItemUnitMaster(detail, saveItemMaster, connection);
         if (saveItemUnit <= 0) {
             throw new RuntimeException("Item Unit save fail !");
         }
@@ -525,27 +510,116 @@ public class AccountService {
         return AccountController.saveStockAdjustment(adjustment, accConnection);
     }
 
-    static Integer saveStockAdjustmentToAccount(StockAdjustment adjustment,Integer user,Integer formIndexNo, Connection accConnection) throws SQLException {
-        Integer stockAccount = -1;
-        Integer stockAdjustmentAccount = -1;
+    static Integer saveStockAdjustmentToLedger(StockAdjustment adjustment, Integer user, Integer formIndexNo, Connection accConnection, Connection operaConnection) throws SQLException {
 
-        stockAccount = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ITEM_SUB_ACCOUNT_OF, accConnection);
-        stockAdjustmentAccount = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ADJUSTMENT_CONTROL_ACCOUNT, accConnection);
+        List<StockAdjustmentDetail> detailList = OperationService.getAdjustmentDetail(adjustment.getIndexNo(), operaConnection);
+        if (adjustment.getFormType().equals(Constant.ITEM_CHANGE_FORM)) {
+            if (detailList.size() != 2) {
+                throw new RuntimeException("Can't find two rows from Item Change Detail !");
+            }
+            Double totalCost = 0.00;
+            for (StockAdjustmentDetail detail : detailList) {
+                AccountService.saveStockAdjustmentDetail(detail, formIndexNo, accConnection);
+                HashMap<Integer, Integer> itemMap = new HashMap<>();
 
-        if (stockAccount < 0) {
-            throw new RuntimeException("Stock Account Setting was Empty !");
-        }
-        if (stockAdjustmentAccount < 0) {
-            throw new RuntimeException("Stock Adjustment Account Setting was Empty !");
-        }
-        if (adjustment.getQty().doubleValue() > 0) {
-            // plus qty     
-            return AccountController.getInstance().saveStockAdjustmentToAccountPlus(adjustment,stockAccount,stockAdjustmentAccount,user,formIndexNo,accConnection);
+                TTypeIndexDetail typeIndexDetailItem = AccountService.CheckTypeIndexDetail(Constant.ITEM, detail.getItemNo().trim(), accConnection);
+                if (typeIndexDetailItem.getType() == null || typeIndexDetailItem == null) {
+                    itemMap = AccountService.saveItem(detail, accConnection);
+                    //type index detail save with item
+                    Integer typeIndexId = AccountService.saveTypeIndexDetail(detail.getItemNo(), Constant.ITEM, itemMap.get(1), itemMap.get(2), accConnection);
+
+                    if (typeIndexId < 0) {
+                        throw new RuntimeException("Type Index detail save fail !");
+                    }
+                    System.out.println("New Item( " + detail.getItemName() + " ) Save Success !");
+                } else {
+                    itemMap.put(1, typeIndexDetailItem.getAccountRefId());
+                    itemMap.put(2, typeIndexDetailItem.getAccountIndex());
+                }
+                if (detail.getQty().doubleValue() < 0) {
+                    //minis qty
+                    totalCost = AccountController.getInstance().saveStockLedger(adjustment, detail, user, formIndexNo, itemMap, accConnection);
+                    if (totalCost <= 0) {
+                        throw new RuntimeException("Stock Ledger save fail. because stock empty !");
+                    }
+                    System.out.println("Stock Adjusted from " + Constant.ITEM_CHANGE_FORM + " - " + detail.getItemNo() + " - " + detail.getItemName() + " - (" + detail.getQty() + ")");
+
+                } else {
+                    // get total cost and devided by qty
+                    System.out.println("Stock Adjusted from " + Constant.ITEM_CHANGE_FORM + " - " + detail.getItemNo().trim() + " - " + detail.getItemName() + " - " + detail.getQty());
+                    return AccountController.getInstance().saveStockLedger(adjustment, detail, totalCost, user, formIndexNo, itemMap, accConnection);
+
+                }
+            }
+
+        } else if (adjustment.getFormType().equals(Constant.ADJUSTMENT)) {
+            if (detailList.size() != 1) {
+                throw new RuntimeException("Can't find a row from Item Change Detail !");
+            }
+            Integer stockAccount = -1;
+            Integer stockAdjustmentAccount = -1;
+
+            stockAccount = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ITEM_SUB_ACCOUNT_OF, accConnection);
+            stockAdjustmentAccount = AccountController.getInstance().getSubAccountOf(Constant.STOCK_ADJUSTMENT_CONTROL_ACCOUNT, accConnection);
+
+            if (stockAccount < 0) {
+                throw new RuntimeException("Stock Account Setting was Empty !");
+            }
+            if (stockAdjustmentAccount < 0) {
+                throw new RuntimeException("Stock Adjustment Account Setting was Empty !");
+            }
+
+            StockAdjustmentDetail detail = detailList.get(0);
+            HashMap<Integer, Integer> itemMap = new HashMap<>();
+            TTypeIndexDetail typeIndexDetailItem = AccountService.CheckTypeIndexDetail(Constant.ITEM, detail.getItemNo().trim(), accConnection);
+            if (typeIndexDetailItem.getType() == null || typeIndexDetailItem == null) {
+
+                itemMap = AccountService.saveItem(detail, accConnection);
+                //type index detail save with item
+                Integer typeIndexId = AccountService.saveTypeIndexDetail(detail.getItemNo(), Constant.ITEM, itemMap.get(1), itemMap.get(2), accConnection);
+
+                if (typeIndexId < 0) {
+                    throw new RuntimeException("Type Index detail save fail !");
+                }
+                System.out.println("New Item( " + detail.getItemName() + " ) Save Success !");
+            } else {
+                itemMap.put(1, typeIndexDetailItem.getAccountRefId());
+                itemMap.put(2, typeIndexDetailItem.getAccountIndex());
+            }
+
+            if (detail.getQty().doubleValue() > 0) {
+                // plus qty     
+//                return AccountController.getInstance().saveStockAdjustmentToAccountPlus(adjustment, detail, stockAccount, stockAdjustmentAccount, user, formIndexNo, itemMap, accConnection);
+                if (detail.getCostPrice().doubleValue() <= 0) {
+                    throw new RuntimeException("Error ! Cost Price is zero !");
+                }
+                Integer save = AccountController.getInstance().saveStockLedgerFromAdjustmentPlusQty(adjustment, detail, itemMap, user, formIndexNo, accConnection);
+                if (save <= 0) {
+                    throw new RuntimeException("Stock Ledger Save Fail !");
+                } else {
+                    System.out.println("Stock Adjusted from " + Constant.ADJUSTMENT + " - " + detail.getItemNo() + " - " + detail.getItemName() + " - " + detail.getQty());
+                    return save;
+                }
+            } else {
+                // minus qty     
+                Double totalCost = AccountController.getInstance().saveStockLedgerFromAdjustmentMinusQty(adjustment, detail, itemMap, user, formIndexNo, accConnection);
+                if (totalCost <= 0) {
+                    throw new RuntimeException("Stock Ledger Save Fail !");
+                } else {
+                    System.out.println("Stock Adjusted from " + Constant.ADJUSTMENT + " - " + detail.getItemNo() + " - " + detail.getItemName() + " - (" + detail.getQty() + ")");
+                    return 1;
+                }
+//                return AccountController.getInstance().saveStockAdjustmentToAccountMinus(adjustment, detail, stockAccount, stockAdjustmentAccount, user, formIndexNo, accConnection);
+            }
         } else {
-            // minus qty     
-            return AccountController.getInstance().saveStockAdjustmentToAccountMinus(adjustment,stockAccount,stockAdjustmentAccount,user,formIndexNo,accConnection);
-
+            throw new RuntimeException("Adjustment Type Doesn't Match !");
         }
+
+        return -1;
+    }
+
+    static void saveStockAdjustmentDetail(StockAdjustmentDetail detail, int saveStockAdjustment, Connection accConnection) throws SQLException {
+        AccountController.getInstance().saveStockAdjustmentDetail(detail, saveStockAdjustment, accConnection);
     }
 
 }

@@ -176,7 +176,7 @@ public class TransactionService {
 
             //Set auto commit as false.
             operaConnection.setAutoCommit(false);
-            accConnection.setAutoCommit(false);
+            accConnection.setAutoCommit(false); 
 
 //             Execute a query to create statment
             List<InvoiceDetail> invoiceDetail = OperationService.getInvoiceDetail(invoice.getIndexNo(), operaConnection);
@@ -323,7 +323,7 @@ public class TransactionService {
             operaConnection.setAutoCommit(false);
             accConnection.setAutoCommit(false);
 
-//             Execute a query to create statment
+            //Execute a query to create statment
             TTypeIndexDetail customerTypeIndexDetail;
             customerTypeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.CUSTOMER, payment.getClientNo(), accConnection);
             if (customerTypeIndexDetail.getType() == null) {
@@ -437,28 +437,17 @@ public class TransactionService {
             accConnection.setAutoCommit(false);
 
 //             Execute a query to create statment
-            HashMap<Integer, Integer> itemMap = new HashMap<>();
-            TTypeIndexDetail typeIndexDetailItem = AccountService.CheckTypeIndexDetail(Constant.ITEM, adjustment.getItemNo(), accConnection);
-            if (typeIndexDetailItem.getType() == null) {
+            int saveStockAdjustment = AccountService.saveStockAdjustment(adjustment, accConnection);
 
-                itemMap = AccountService.saveItem(adjustment, accConnection);
-                //type index detail save with item
-                Integer typeIndexId = AccountService.saveTypeIndexDetail(adjustment.getItemNo(), Constant.ITEM, itemMap.get(1), itemMap.get(2), accConnection);
-
-                if (typeIndexId < 0) {
-                    throw new RuntimeException("Type Index detail save fail !");
-                }
-                System.out.println("New Item( " + adjustment.getItemName() + " ) Save Success !");
-            } else {
-                itemMap.put(1, typeIndexDetailItem.getAccountRefId());
-                itemMap.put(2, typeIndexDetailItem.getAccountIndex());
+            Integer saveIndex = AccountService.saveStockAdjustmentToLedger(adjustment, user, saveStockAdjustment, accConnection,operaConnection);
+            if (saveIndex<=0) {
+                throw new RuntimeException("Stock Ledger Save Fail !");
             }
-            int saveStockAdjustment = AccountService.saveStockAdjustment(adjustment,accConnection);
-            if (saveStockAdjustment<=0) {
-                throw new RuntimeException("Stock Adjustment save fail !");
+            
+            Integer masterId = OperationService.updateAdjustment(adjustment.getIndexNo(), operaConnection);
+            if (masterId<=0) {
+                throw new RuntimeException("Stock Adjustment Status update fail !");
             }
-            Integer saveIndex=AccountService.saveStockAdjustmentToAccount(adjustment,user,saveStockAdjustment,accConnection);
-
             System.out.println("Stock Adjustment Save Success ! ");
             System.out.println(" ");
             //commit

@@ -30,7 +30,7 @@ import model.operation_model.Payment;
 import model.operation_model.PaymentDetail;
 import model.operation_model.PaymentInformation;
 import model.operation_model.StockAdjustment;
-import service.AccountService;
+import model.operation_model.StockAdjustmentDetail;
 
 /**
  *
@@ -64,23 +64,16 @@ public class AccountController {
     }
 
     public static int saveStockAdjustment(StockAdjustment adjustment, Connection connection) throws SQLException {
-        String insertSql = "insert into t_stock_adjustment (item_no,item_name,item_unit,barcode,\n"
-                + "enter_date,enter_time,updated_date,updated_time,cost_price,qty,branch,ref_no,form_type)\n"
-                + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String insertSql = "insert into t_stock_adjustment (enter_date,enter_time,updated_date,updated_time,branch,ref_no,form_type)\n"
+                + " values (?,?,?,?,?,?,?)";
         PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
-        preparedStatement.setString(1, adjustment.getItemNo());
-        preparedStatement.setString(2, adjustment.getItemName());
-        preparedStatement.setString(3, adjustment.getItemUnit());
-        preparedStatement.setString(4, adjustment.getBarcode());
-        preparedStatement.setString(5, adjustment.getEnterDate());
-        preparedStatement.setString(6, adjustment.getEnterTime());
-        preparedStatement.setString(7, adjustment.getUpdatedDate());
-        preparedStatement.setString(8, adjustment.getUpdatedTime());
-        preparedStatement.setBigDecimal(9, adjustment.getCostPrice());
-        preparedStatement.setBigDecimal(10, adjustment.getQty());
-        preparedStatement.setInt(11, adjustment.getBranch());
-        preparedStatement.setString(12, adjustment.getRefNo());
-        preparedStatement.setString(13, adjustment.getFormType());
+        preparedStatement.setString(1, adjustment.getEnterDate());
+        preparedStatement.setString(2, adjustment.getEnterTime());
+        preparedStatement.setString(3, adjustment.getUpdatedDate());
+        preparedStatement.setString(4, adjustment.getUpdatedTime());
+        preparedStatement.setInt(5, adjustment.getBranch());
+        preparedStatement.setString(6, adjustment.getRefNo());
+        preparedStatement.setString(7, adjustment.getFormType());
 
         preparedStatement.executeUpdate();
         ResultSet resultSet = preparedStatement.getGeneratedKeys();
@@ -1271,7 +1264,7 @@ public class AccountController {
                     invQty -= tStockLedger.getInQty().doubleValue();
                 }
             }
-            if (invQty <= tStockLedger.getInQty().doubleValue()) {
+            else if (invQty <= tStockLedger.getInQty().doubleValue()) {
                 //save inv qty total
                 Integer saveQ = saveStockLedgerFromInvoice(invoice, itemMap, invoiceMap, new BigDecimal(invQty), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), store, accConnection);
 
@@ -1640,18 +1633,18 @@ public class AccountController {
         return -1;
     }
 
-    public Integer saveItemMaster(StockAdjustment adjustment, Integer itemSubAccountOf, Connection connection) throws SQLException {
+    public Integer saveItemMaster(StockAdjustmentDetail detail, Integer itemSubAccountOf, Connection connection) throws SQLException {
         String insertSql = "insert into m_item (name,barcode,print_description,cost_price,\n"
                 + "type,account,unit)\n"
                 + " values (?,?,?,?,?,?,?)";
         PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
-        preparedStatement.setString(1, adjustment.getItemName());
-        preparedStatement.setString(2, adjustment.getBarcode());
-        preparedStatement.setString(3, adjustment.getItemName());
-        preparedStatement.setBigDecimal(4, adjustment.getCostPrice());
+        preparedStatement.setString(1, detail.getItemName());
+        preparedStatement.setString(2, detail.getBarcode());
+        preparedStatement.setString(3, detail.getItemName());
+        preparedStatement.setBigDecimal(4, detail.getCostPrice());
         preparedStatement.setString(5, Constant.ITEM_STOCK);
         preparedStatement.setInt(6, itemSubAccountOf);
-        preparedStatement.setString(7, adjustment.getItemUnit());
+        preparedStatement.setString(7, detail.getItemUnit());
 
         preparedStatement.executeUpdate();
         ResultSet resultSet = preparedStatement.getGeneratedKeys();
@@ -1661,23 +1654,23 @@ public class AccountController {
         return -1;
     }
 
-    public Integer saveItemUnitMaster(StockAdjustment adjustment, Integer item, Connection connection) throws SQLException {
+    public Integer saveItemUnitMaster(StockAdjustmentDetail detail, Integer item, Connection connection) throws SQLException {
         String insertSql = "insert into m_item_units (item,name,unit,qty,sale_price_normal,sale_price_register,cost_price,item_unit_type)\n"
                 + " values (?,?,?,?,?,?,?,?)";
         PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
         preparedStatement.setInt(1, item);
-        preparedStatement.setString(2, adjustment.getItemName());
-        preparedStatement.setString(3, adjustment.getItemUnit());
-        preparedStatement.setBigDecimal(4, adjustment.getQty());
+        preparedStatement.setString(2, detail.getItemName());
+        preparedStatement.setString(3, detail.getItemUnit());
+        preparedStatement.setBigDecimal(4, detail.getQty());
         preparedStatement.setBigDecimal(5, new BigDecimal(0));
         preparedStatement.setBigDecimal(6, new BigDecimal(0));
-        preparedStatement.setBigDecimal(7, adjustment.getCostPrice());
+        preparedStatement.setBigDecimal(7, detail.getCostPrice());
         preparedStatement.setString(8, Constant.ITEM_UNIT_MAIN);
 
         return preparedStatement.executeUpdate();
     }
 
-    public Integer saveStockAdjustmentToAccountPlus(StockAdjustment adjustment, Integer stockAccount, Integer stockAdjustmentAccount, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
+    public Integer saveStockAdjustmentToAccountPlus(StockAdjustment adjustment, StockAdjustmentDetail detail, Integer stockAccount, Integer stockAdjustmentAccount, Integer user, Integer formIndexNo, HashMap<Integer, Integer> itemMap, Connection accConnection) throws SQLException {
         HashMap<Integer, Object> numberMap = getAccLedgerNumber(adjustment.getBranch(), Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT, accConnection);
 
         //stock account
@@ -1694,7 +1687,7 @@ public class AccountController {
         preparedStatement.setInt(6, adjustment.getBranch());
         preparedStatement.setInt(7, adjustment.getBranch());
         preparedStatement.setInt(8, user);
-        preparedStatement.setBigDecimal(9, adjustment.getCostPrice());
+        preparedStatement.setBigDecimal(9, detail.getCostPrice());
         preparedStatement.setBigDecimal(10, new BigDecimal(0));
         preparedStatement.setInt(11, stockAccount);
         preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
@@ -1735,7 +1728,7 @@ public class AccountController {
         preparedStatement1.setInt(7, adjustment.getBranch());
         preparedStatement1.setInt(8, user);
         preparedStatement1.setBigDecimal(9, new BigDecimal(0));
-        preparedStatement1.setBigDecimal(10, adjustment.getCostPrice());
+        preparedStatement1.setBigDecimal(10, detail.getCostPrice());
         preparedStatement1.setInt(11, stockAdjustmentAccount);
         preparedStatement1.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
         preparedStatement1.setString(13, adjustment.getRefNo());
@@ -1752,7 +1745,7 @@ public class AccountController {
 
     }
 
-    public Integer saveStockAdjustmentToAccountMinus(StockAdjustment adjustment, Integer stockAccount, Integer stockAdjustmentAccount, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
+    public Integer saveStockAdjustmentToAccountMinus(StockAdjustment adjustment, StockAdjustmentDetail detail, Integer stockAccount, Integer stockAdjustmentAccount, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
         HashMap<Integer, Object> numberMap = getAccLedgerNumber(adjustment.getBranch(), Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT, accConnection);
 
         //stock account
@@ -1770,7 +1763,7 @@ public class AccountController {
         preparedStatement.setInt(7, adjustment.getBranch());
         preparedStatement.setInt(8, user);
         preparedStatement.setBigDecimal(9, new BigDecimal(0));
-        preparedStatement.setBigDecimal(10, adjustment.getCostPrice());
+        preparedStatement.setBigDecimal(10, detail.getCostPrice());
         preparedStatement.setInt(11, stockAccount);
         preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
         preparedStatement.setString(13, adjustment.getRefNo());
@@ -1809,7 +1802,7 @@ public class AccountController {
         preparedStatement1.setInt(6, adjustment.getBranch());
         preparedStatement1.setInt(7, adjustment.getBranch());
         preparedStatement1.setInt(8, user);
-        preparedStatement1.setBigDecimal(9, adjustment.getCostPrice());
+        preparedStatement1.setBigDecimal(9, detail.getCostPrice());
         preparedStatement1.setBigDecimal(10, new BigDecimal(0));
         preparedStatement1.setInt(11, stockAdjustmentAccount);
         preparedStatement1.setString(12, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
@@ -1836,4 +1829,128 @@ public class AccountController {
 
         preparedStatement.executeUpdate();
     }
+
+    public void saveStockAdjustmentDetail(StockAdjustmentDetail detail, int saveStockAdjustment, Connection accConnection) throws SQLException {
+        String insertSql = "insert into t_stock_adjustment_detail (stock_adjustment,item_no,item_name,item_unit,barcode,cost_price,qty)\n"
+                + " values (?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, saveStockAdjustment);
+        preparedStatement.setString(2, detail.getItemNo());
+        preparedStatement.setString(3, detail.getItemName());
+        preparedStatement.setString(4, detail.getItemUnit());
+        preparedStatement.setString(5, detail.getBarcode());
+        preparedStatement.setBigDecimal(6, detail.getCostPrice());
+        preparedStatement.setBigDecimal(7, detail.getQty());
+
+        preparedStatement.executeUpdate();
+    }
+
+    public Double saveStockLedger(StockAdjustment adjustment, StockAdjustmentDetail detail, Integer user, Integer formIndexNo, HashMap<Integer, Integer> itemMap, Connection accConnection) throws SQLException {
+        Integer mainStock = findStock(adjustment.getBranch(), Constant.STOCK_MAIN, accConnection);
+        double totalCost = 0.00;
+        if (detail.getQty().doubleValue() < 0) {
+            List<TStockLedger> fifoList = getFifoList(itemMap.get(2), adjustment.getEnterDate(), adjustment.getBranch(), mainStock, accConnection);
+            double removeValue = detail.getQty().doubleValue() * -1;
+            if (fifoList.size() <= 0) {
+                throw new RuntimeException("Stock is empty for " + itemMap.get(2) + " - " + adjustment.getBranch() + " - " + adjustment.getEnterDate());
+            }
+            for (TStockLedger tStockLedger : fifoList) {
+                if (removeValue > tStockLedger.getInQty().doubleValue()) {
+                    //save tStockLedger total
+                    Integer saveT = saveStockLedgerFromAdjustment(adjustment, itemMap, tStockLedger.getInQty(), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), mainStock, formIndexNo, accConnection);
+                    if (saveT > 0) {
+                        removeValue -= tStockLedger.getInQty().doubleValue();
+                        totalCost += tStockLedger.getInQty().doubleValue() * tStockLedger.getAvaragePriceIn().doubleValue();
+                    } else {
+                        throw new RuntimeException("Stock Ledger Save Fail !");
+                    }
+                }
+                else if (removeValue <= tStockLedger.getInQty().doubleValue()) {
+                    //save inv qty total
+                    Integer saveQ = saveStockLedgerFromAdjustment(adjustment, itemMap, new BigDecimal(removeValue), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), mainStock, formIndexNo, accConnection);
+                    if (saveQ <= 0) {
+                        throw new RuntimeException("Stock Ledger Save Fail !");
+                    }
+                    totalCost += removeValue * tStockLedger.getAvaragePriceIn().doubleValue();
+                    return totalCost;
+                }
+            }
+        }
+        return -1.0;
+
+    }
+
+    private Integer saveStockLedgerFromAdjustment(StockAdjustment adjustment, HashMap<Integer, Integer> itemMap, BigDecimal inQty, BigDecimal avaragePriceIn, int groupNumber, Integer mainStock, Integer formIndex, Connection accConnection) throws SQLException {
+        String insertSql = "insert into t_stock_ledger (item,store,date,in_qty,out_qty,avarage_price_in,avarage_price_out,\n"
+                + "form_index_no,form,branch,type,group_number)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, Integer.parseInt(itemMap.get(2).toString()));
+        preparedStatement.setInt(2, mainStock);
+        preparedStatement.setString(3, adjustment.getEnterDate());
+        preparedStatement.setBigDecimal(4, new BigDecimal(0));
+        preparedStatement.setBigDecimal(5, inQty);
+        preparedStatement.setBigDecimal(6, new BigDecimal(0));
+        preparedStatement.setBigDecimal(7, avaragePriceIn);
+        preparedStatement.setInt(8, formIndex);
+        preparedStatement.setString(9, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(10, adjustment.getBranch());
+        preparedStatement.setString(11, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(12, groupNumber);
+
+        return preparedStatement.executeUpdate();
+    }
+
+    public Integer saveStockLedger(StockAdjustment adjustment, StockAdjustmentDetail detail, Double totalCost, Integer user, Integer formIndexNo, HashMap<Integer, Integer> itemMap, Connection accConnection) throws SQLException {
+        Integer mainStock = findStock(adjustment.getBranch(), Constant.STOCK_MAIN, accConnection);
+        Integer groupNo = nextStockLedgerGroupNumber(accConnection);
+        String insertSql = "insert into t_stock_ledger (item,store,date,in_qty,out_qty,avarage_price_in,avarage_price_out,\n"
+                + "form_index_no,form,branch,type,group_number)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, Integer.parseInt(itemMap.get(2).toString()));
+        preparedStatement.setInt(2, mainStock);
+        preparedStatement.setString(3, adjustment.getEnterDate());
+        preparedStatement.setBigDecimal(4, detail.getQty());
+        preparedStatement.setBigDecimal(5, new BigDecimal(0));
+        preparedStatement.setBigDecimal(6, new BigDecimal(totalCost / detail.getQty().doubleValue()));
+        preparedStatement.setBigDecimal(7, new BigDecimal(0));
+        preparedStatement.setInt(8, formIndexNo);
+        preparedStatement.setString(9, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(10, adjustment.getBranch());
+        preparedStatement.setString(11, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(12, groupNo);
+
+        return preparedStatement.executeUpdate();
+
+    }
+
+    public Integer saveStockLedgerFromAdjustmentPlusQty(StockAdjustment adjustment, StockAdjustmentDetail detail, HashMap<Integer, Integer> itemMap, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
+        Integer mainStock = findStock(adjustment.getBranch(), Constant.STOCK_MAIN, accConnection);
+        Integer groupNo = nextStockLedgerGroupNumber(accConnection);
+        String insertSql = "insert into t_stock_ledger (item,store,date,in_qty,out_qty,avarage_price_in,avarage_price_out,\n"
+                + "form_index_no,form,branch,type,group_number)\n"
+                + " values (?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, Integer.parseInt(itemMap.get(2).toString()));
+        preparedStatement.setInt(2, mainStock);
+        preparedStatement.setString(3, adjustment.getEnterDate());
+        preparedStatement.setBigDecimal(4, detail.getQty());
+        preparedStatement.setBigDecimal(5, new BigDecimal(0));
+        preparedStatement.setBigDecimal(6, detail.getCostPrice());
+        preparedStatement.setBigDecimal(7, new BigDecimal(0));
+        preparedStatement.setInt(8, formIndexNo);
+        preparedStatement.setString(9, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(10, adjustment.getBranch());
+        preparedStatement.setString(11, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
+        preparedStatement.setInt(12, groupNo);
+
+        return preparedStatement.executeUpdate();
+    }
+
+    public Double saveStockLedgerFromAdjustmentMinusQty(StockAdjustment adjustment, StockAdjustmentDetail detail, HashMap<Integer, Integer> itemMap, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
+        return saveStockLedger(adjustment, detail, user, formIndexNo, itemMap, accConnection);
+
+    }
+
 }

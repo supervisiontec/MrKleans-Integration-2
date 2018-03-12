@@ -51,6 +51,8 @@ public interface Constant {
     public static final String SYSTEM_INTEGRATION_INVOICE = "SYSTEM_INTEGRATION_INVOICE";
     public static final String SYSTEM_INTEGRATION_PAYMENT = "SYSTEM_INTEGRATION_PAYMENT";
     public static final String SYSTEM_INTEGRATION_STOCK_ADJUSTMENT = "SYSTEM_INTEGRATION_STOCK_ADJUSTMENT";
+    public static final String ITEM_CHANGE_FORM = "ITEM_CHANGE";
+    public static final String ADJUSTMENT = "ADJUSTMENT";
     
     //status
     public static final String STATUS_APPROVED = "APPROVED";
