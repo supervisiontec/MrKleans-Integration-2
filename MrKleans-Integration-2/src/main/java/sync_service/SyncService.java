@@ -6,6 +6,7 @@
 package sync_service;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import model.operation_model.Grn;
 import model.operation_model.Invoice;
@@ -105,6 +106,14 @@ public class SyncService {
         for (StockAdjustment adjustment : stockAdjustmentList) {
             TransactionService.getInstance().saveStockAdjustment(adjustment,user);
         }
+    }
+
+    public String getTransactionDate() throws SQLException {
+        return operationService.getTransactionDate();
+    }
+
+    public String getNextDate(String date) throws SQLException, ParseException {
+        return operationService.getNextDate(date);
     }
 
 }

@@ -8,6 +8,7 @@ package service;
 import controller.OperationController;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import model.operation_model.Grn;
@@ -92,5 +93,13 @@ public class OperationService {
 
     public ArrayList<StockAdjustment> getNotCheckStockAdjustmentList(String date) throws SQLException {
          return OperationController.getInstance().getNotCheckStockAdjustmentList(date);
+    }
+
+    public String getTransactionDate() throws SQLException {
+        return OperationController.getInstance().getTransactionDate();
+    }
+
+    public String getNextDate(String date) throws SQLException, ParseException {
+        return OperationController.getInstance().getNextDate(date);
     }
 }

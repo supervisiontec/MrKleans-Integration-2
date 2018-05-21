@@ -33,7 +33,7 @@ import model.operation_model.StockAdjustmentDetail;
  */
 public class AccountService {
 
-    public static HashMap<Integer, Integer> saveSupplier(Grn grn, Connection connection) throws SQLException {
+    public static HashMap<Integer, Integer> saveSupplier(Grn grn,Integer user, Connection connection) throws SQLException {
         Integer supplierSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.SUPPLIER_SUB_ACCOUNT_OF, connection);
         if (supplierSubAccountOf < 0 || supplierSubAccountOf == null) {
             throw new RuntimeException("Supplier Sub Account of Setting was Empty !");
@@ -46,7 +46,7 @@ public class AccountService {
         mAccAccount.setIsAccAccount(true);
         mAccAccount.setName(grn.getSupName());
         mAccAccount.setSubAccountOf(supplierSubAccountOf);
-        mAccAccount.setUser(1);
+        mAccAccount.setUser(user);
         Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
         if (accAccountIndex < 0) {
             throw new RuntimeException("Supplier account save fail !");
@@ -142,21 +142,7 @@ public class AccountService {
         if (itemSubAccountOf < 0) {
             throw new RuntimeException("Item Sub Account of Setting was Empty !");
         }
-//        MAccAccount mAccAccount = new MAccAccount();
-//        mAccAccount.setIndexNo(null);
-//        mAccAccount.setAccType("COMMON");
-//        mAccAccount.setCop(false);
-//        mAccAccount.setDescription("System Integoration new Item");
-//        mAccAccount.setIsAccAccount(true);
-//        mAccAccount.setName(detail.getItemName());
-//        mAccAccount.setSubAccountOf(itemSubAccountOf);
-//        mAccAccount.setUser(1);
-//        Integer accAccountIndex = saveAccAccount(mAccAccount, connection);
-//        if (accAccountIndex < 0) {
-//            throw new RuntimeException("item account save fail !");
-//        }
 
-//
         Integer saveItemMaster = AccountController.getInstance().saveItemMaster(detail, itemSubAccountOf, connection);
         Integer saveItemUnit = AccountController.getInstance().saveItemUnitMaster(detail, saveItemMaster, connection);
         if (saveItemUnit <= 0) {
@@ -281,7 +267,7 @@ public class AccountService {
         return AccountController.getInstance().CheckTypeIndexDetail(type, typeIndex, operaConnection);
     }
 
-    static HashMap<Integer, Integer> saveCustomer(Invoice invoice, Connection accConnection) throws SQLException {
+    static HashMap<Integer, Integer> saveCustomer(Invoice invoice,Integer user, Connection accConnection) throws SQLException {
         Integer supplierSubAccountOf = AccountController.getInstance().getSubAccountOf(Constant.CUSTOMER_SUB_ACCOUNT_OF, accConnection);
         if (supplierSubAccountOf < 0) {
             throw new RuntimeException("Customer Sub Account of Setting was Empty !");
@@ -294,7 +280,7 @@ public class AccountService {
         mAccAccount.setIsAccAccount(true);
         mAccAccount.setName(invoice.getClientName() + "(" + invoice.getClientNo() + ")");
         mAccAccount.setSubAccountOf(supplierSubAccountOf);
-        mAccAccount.setUser(1);
+        mAccAccount.setUser(user);
         Integer accAccountIndex = saveAccAccount(mAccAccount, accConnection);
         if (accAccountIndex < 0) {
             throw new RuntimeException("Supplier account save fail !");

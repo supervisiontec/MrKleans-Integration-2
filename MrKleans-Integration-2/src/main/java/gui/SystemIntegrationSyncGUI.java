@@ -7,10 +7,12 @@ package gui;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import sync_service.SyncService;
 
 /**
@@ -49,17 +51,17 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         SyncService.getInstance().executePayment(date, loginUser1);
         getDetailCount(date);
     }
-    
+
     private void executeStockAdjustment(String date, Integer loginUser) throws SQLException {
         SyncService.getInstance().executeStockAdjustment(date, loginUser);
         getDetailCount(date);
-        
+
     }
 
     private void getDetailCount(String date) throws SQLException {
         Integer stockAdjustmentCount = SyncService.getInstance().getStockAdjustmentCount(date);
         btnStockAdjust.setText("Stock Adjustment" + " - " + stockAdjustmentCount);
-        
+
         Integer grnCount = SyncService.getInstance().getGrnCount(date);
         btnGrn.setText("GRN" + " - " + grnCount);
 
@@ -68,18 +70,23 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
         Integer paymentCount = SyncService.getInstance().getPaymentCount(date);
         btnPayment.setText("Payment" + " - " + paymentCount);
-       
+
     }
 
     @SuppressWarnings("unchecked")
     private void initOthers() {
-        setTitle("Account Integration System");
-        setLocationRelativeTo(null);
-        txtLog.setEditable(false);
-        txtDate.setText(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        try {
+            setTitle("Account Integration System");
+            setLocationRelativeTo(null);
+            txtLog.setEditable(false);
+            String date = SyncService.getInstance().getTransactionDate();
+            txtDate.setText(date);
 
-        TextAreaOutputStream textAreaOutputStream = new TextAreaOutputStream(txtLog);
-        System.setOut(new PrintStream(textAreaOutputStream));
+            TextAreaOutputStream textAreaOutputStream = new TextAreaOutputStream(txtLog);
+            System.setOut(new PrintStream(textAreaOutputStream));
+        } catch (SQLException ex) {
+            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void setLoginUser(Integer loginUser) {
@@ -101,6 +108,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         lblProcess = new javax.swing.JLabel();
         btnStockAdjust = new javax.swing.JButton();
+        btnSync = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(550, 330));
@@ -114,6 +122,8 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         txtLog.setColumns(20);
         txtLog.setRows(5);
         jScrollPane2.setViewportView(txtLog);
+
+        txtDate.setEnabled(false);
 
         btnClear.setText("Clear");
         btnClear.addActionListener(new java.awt.event.ActionListener() {
@@ -157,29 +167,42 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
             }
         });
 
+        btnSync.setText("Sync");
+        btnSync.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSyncActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnStockAdjust, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
-                    .addComponent(btnGrn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnInvoice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnPayment, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(33, 33, 33)
-                        .addComponent(lblProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(38, 38, 38)
-                        .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 682, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnStockAdjust, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(btnGrn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnInvoice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnPayment, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(btnSync, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(33, 33, 33)
+                                .addComponent(lblProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(38, 38, 38)
+                                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 682, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -193,15 +216,17 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
                         .addComponent(btnClear)
                         .addComponent(lblProcess)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnStockAdjust)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnGrn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnStockAdjust)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnInvoice)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnPayment))
+                        .addComponent(btnPayment)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnSync))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -225,46 +250,64 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoiceActionPerformed
-        lblProcess.setText("processing . . .");
-        try {
-            executeInvoice(txtDate.getText(), loginUser);
-        } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        if (optionPain() == 0) {
+            try {
+                lblProcess.setText("processing . . .");
+                executeInvoice(txtDate.getText(), loginUser);
+                lblProcess.setText("");
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        lblProcess.setText("");
     }//GEN-LAST:event_btnInvoiceActionPerformed
 
     private void btnGrnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrnActionPerformed
-        try {
-            lblProcess.setText("processing . . .");
-            executeGrn(txtDate.getText(), loginUser);
-            lblProcess.setText("");
-        } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        if (optionPain() == 0) {
+            try {
+                lblProcess.setText("processing . . .");
+                executeGrn(txtDate.getText(), loginUser);
+                lblProcess.setText("");
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
     }//GEN-LAST:event_btnGrnActionPerformed
 
     private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
-        try {
-            lblProcess.setText("processing . . .");
-            executePayment(txtDate.getText(), loginUser);
-            lblProcess.setText("");
-        } catch (SQLException ex) {
-            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        if (optionPain() == 0) {
+            try {
+                lblProcess.setText("processing . . .");
+                executePayment(txtDate.getText(), loginUser);
+                lblProcess.setText("");
+            } catch (SQLException ex) {
+                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_btnPaymentActionPerformed
 
     private void btnStockAdjustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStockAdjustActionPerformed
-        try {
-            lblProcess.setText("processing . . .");
-            executeStockAdjustment(txtDate.getText(), loginUser);
-            lblProcess.setText("");
-        } catch (SQLException ex) {
-            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        if (optionPain() == 0) {
+            try {
+                lblProcess.setText("processing . . .");
+                executeStockAdjustment(txtDate.getText(), loginUser);
+                lblProcess.setText("");
+            } catch (SQLException ex) {
+                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        
     }//GEN-LAST:event_btnStockAdjustActionPerformed
+
+    private void btnSyncActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSyncActionPerformed
+        if (optionPain() == 0) {
+            try {
+                String date = SyncService.getInstance().getNextDate(txtDate.getText());
+                txtDate.setText(date);
+            } catch (SQLException | ParseException ex) {
+                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_btnSyncActionPerformed
 
     /**
      * @param args the command line arguments
@@ -279,11 +322,16 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     private javax.swing.JButton btnInvoice;
     private javax.swing.JButton btnPayment;
     private javax.swing.JButton btnStockAdjust;
+    private javax.swing.JButton btnSync;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblProcess;
     private javax.swing.JTextField txtDate;
     private javax.swing.JTextArea txtLog;
     // End of variables declaration//GEN-END:variables
+
+    private int optionPain() {
+        return JOptionPane.showConfirmDialog(null, "Are you sure ?", "Warning", JOptionPane.YES_OPTION);
+    }
 
 }

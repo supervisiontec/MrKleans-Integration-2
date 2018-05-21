@@ -1253,7 +1253,7 @@ public class AccountController {
     private Integer saveStockLedger(InvoiceDetail detail, Invoice invoice, HashMap<Integer, Integer> itemMap, HashMap<Integer, Integer> invoiceMap, Integer store, Connection accConnection) throws SQLException {
         List<TStockLedger> stockLedgerList = getFifoList(itemMap.get(2), invoice.getEnterDate(), invoice.getBranch(), store, accConnection);
         if (stockLedgerList.size() <= 0) {
-            throw new RuntimeException("Empty stock Qty for this item (" + detail.getItemName() + ")and " + invoice.getEnterDate() + " !");
+            throw new RuntimeException("Empty stock Qty for this item (" +detail.getItemNo()+" - "+itemMap.get(2)+" - "+ detail.getItemName() + ")and " + invoice.getEnterDate() + " !");
         }
         Double invQty = detail.getStockRemoveQty().doubleValue();
         for (TStockLedger tStockLedger : stockLedgerList) {
@@ -1271,7 +1271,7 @@ public class AccountController {
                 return saveQ;
             }
         }
-        throw new RuntimeException("Not enough stock qty for this item (" + detail.getItemName() + ") !");
+        throw new RuntimeException("Not enough stock qty for this item ("+itemMap.get(2)+ " - "+ detail.getItemName() + ") !");
     }
 
     private Integer getItemUnit(Integer item, Connection accConnection) throws SQLException {

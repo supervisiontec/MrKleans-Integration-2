@@ -10,8 +10,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import model.operation_model.Grn;
@@ -127,7 +129,7 @@ public class OperationController {
     }
 
     public ArrayList<Invoice> getNotCheckInvoiceList(String date) throws SQLException {
-         ArrayList<StockAdjustment> pendingAdjustmentList = getNotCheckStockAdjustmentList(date);
+        ArrayList<StockAdjustment> pendingAdjustmentList = getNotCheckStockAdjustmentList(date);
         if (!pendingAdjustmentList.isEmpty()) {
             System.out.println("There is " + pendingAdjustmentList.size() + " pending Stock Adjustment.first of all integrate Stock Adjustment to Account system !");
             throw new RuntimeException("There is " + pendingAdjustmentList.size() + " pending Stock Adjustment.first of all integrate Stock Adjustment to Account system !");
@@ -365,6 +367,12 @@ public class OperationController {
     }
 
     public ArrayList<StockAdjustment> getNotCheckStockAdjustmentList(String date) throws SQLException {
+
+        ArrayList<Grn> pendingGrnList = getNotCheckGrnList(date);
+        if (!pendingGrnList.isEmpty()) {
+            System.out.println("There is " + pendingGrnList.size() + " pending Grn.first of all integrate grn to Account system !");
+            throw new RuntimeException("There is " + pendingGrnList.size() + " pending Grn.first of all integrate grn to Account system !");
+        }
         try (Connection connection = operationDataSourceWrapper.getConnection()) {
             String query = "select stock_adjustment.*\n"
                     + "from stock_adjustment where stock_adjustment.enter_date <= ? and stock_adjustment.`check`=0\n";
@@ -391,9 +399,10 @@ public class OperationController {
     }
 
     public List<StockAdjustmentDetail> getAdjustmentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
-         String query = "select stock_adjustment_detail.*\n"
+
+        String query = "select stock_adjustment_detail.*\n"
                 + "from stock_adjustment_detail where stock_adjustment_detail.stock_adjustment=?\n"
-                 + "order by stock_adjustment_detail.qty asc";
+                + "order by stock_adjustment_detail.qty asc";
         PreparedStatement preparedStatement = operaConnection.prepareStatement(query);
         preparedStatement.setInt(1, indexNo);
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -424,4 +433,49 @@ public class OperationController {
         return preparedStatement.executeUpdate();
     }
 
+    public String getTransactionDate() throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String query = "select transaction_date.date from transaction_date where transaction_date.index_no=1";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString(1);
+            }
+            throw new RuntimeException("Get Transaction Date Fail");
+        }
+    }
+
+    public String getNextDate(String date) throws SQLException, ParseException {
+
+        ArrayList<Invoice> pendingInvoiceList = getNotCheckInvoiceList(date);
+        if (!pendingInvoiceList.isEmpty()) {
+            System.out.println("There is " + pendingInvoiceList.size() + " pending Invoice.first of all integrate invoice to Account system !");
+            throw new RuntimeException("There is " + pendingInvoiceList.size() + " pending Invoice.first of all integrate invoice to Account system !");
+        }
+        ArrayList<Payment> pendingPaymentList = getNotCheckPaymentList(date);
+        if (!pendingPaymentList.isEmpty()) {
+            System.out.println("There is " + pendingPaymentList.size() + " pending Payment.first of all integrate Payment to Account system !");
+            throw new RuntimeException("There is " + pendingPaymentList.size() + " pending Payment.first of all integrate Payment to Account system !");
+        }
+
+        String dt = date;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(sdf.parse(dt));
+        c.add(Calendar.DATE, 1);
+        dt = sdf.format(c.getTime());
+
+        return setNewDate(dt);
+    }
+
+    private String setNewDate(String date) throws SQLException {
+        try (Connection connection = operationDataSourceWrapper.getConnection()) {
+            String insertSql = "UPDATE transaction_date SET transaction_date.date=? WHERE  transaction_date.index_no=1;";
+            PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
+            preparedStatement.setString(1, date);
+            preparedStatement.executeUpdate();
+        }
+        return date;
+                
+    }
 }

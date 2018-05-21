@@ -70,7 +70,7 @@ public class TransactionService {
             typeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.SUPPLIER, grn.getSupNo(), accConnection);
             if (typeIndexDetail.getType() == null) {
                 //type index detail save with supplier
-                supplierMap = AccountService.saveSupplier(grn, accConnection);
+                supplierMap = AccountService.saveSupplier(grn, user,accConnection);
 
                 Integer typeIndexId = AccountService.saveTypeIndexDetail(grn.getSupNo(), Constant.SUPPLIER, supplierMap.get(1), supplierMap.get(2), accConnection);
 
@@ -189,7 +189,7 @@ public class TransactionService {
             typeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.CUSTOMER, invoice.getClientNo(), accConnection);
             if (typeIndexDetail.getType() == null) {
                 //type index detail save with customer
-                customerMap = AccountService.saveCustomer(invoice, accConnection);
+                customerMap = AccountService.saveCustomer(invoice,user, accConnection);
 
                 Integer typeIndexId = AccountService.saveTypeIndexDetail(invoice.getClientNo(), Constant.CUSTOMER, customerMap.get(1), customerMap.get(2), accConnection);
 
