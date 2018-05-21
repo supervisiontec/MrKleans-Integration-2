@@ -70,7 +70,7 @@ public class TransactionService {
             typeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.SUPPLIER, grn.getSupNo(), accConnection);
             if (typeIndexDetail.getType() == null) {
                 //type index detail save with supplier
-                supplierMap = AccountService.saveSupplier(grn, user,accConnection);
+                supplierMap = AccountService.saveSupplier(grn, user, accConnection);
 
                 Integer typeIndexId = AccountService.saveTypeIndexDetail(grn.getSupNo(), Constant.SUPPLIER, supplierMap.get(1), supplierMap.get(2), accConnection);
 
@@ -176,7 +176,7 @@ public class TransactionService {
 
             //Set auto commit as false.
             operaConnection.setAutoCommit(false);
-            accConnection.setAutoCommit(false); 
+            accConnection.setAutoCommit(false);
 
 //             Execute a query to create statment
             List<InvoiceDetail> invoiceDetail = OperationService.getInvoiceDetail(invoice.getIndexNo(), operaConnection);
@@ -189,7 +189,7 @@ public class TransactionService {
             typeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.CUSTOMER, invoice.getClientNo(), accConnection);
             if (typeIndexDetail.getType() == null) {
                 //type index detail save with customer
-                customerMap = AccountService.saveCustomer(invoice,user, accConnection);
+                customerMap = AccountService.saveCustomer(invoice, user, accConnection);
 
                 Integer typeIndexId = AccountService.saveTypeIndexDetail(invoice.getClientNo(), Constant.CUSTOMER, customerMap.get(1), customerMap.get(2), accConnection);
 
@@ -326,8 +326,19 @@ public class TransactionService {
             //Execute a query to create statment
             TTypeIndexDetail customerTypeIndexDetail;
             customerTypeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.CUSTOMER, payment.getClientNo(), accConnection);
+            HashMap<Integer, Integer> customerMap = new HashMap<>();
             if (customerTypeIndexDetail.getType() == null) {
-                throw new RuntimeException("Customer Not found !");
+//                throw new RuntimeException("Customer Not found !");
+                // save change customer
+                customerMap = AccountService.saveCustomer(payment, user, accConnection);
+
+                Integer typeIndexId = AccountService.saveTypeIndexDetail(payment.getClientNo(), Constant.CUSTOMER, customerMap.get(1), customerMap.get(2), accConnection);
+
+                if (typeIndexId < 0) {
+                    throw new RuntimeException("Type Index detail save fail !");
+                }
+                System.out.println("New Customer ( " + payment.getClientNo() + "-" + payment.getClientName() + " ) Save Success !");
+                customerTypeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.CUSTOMER, payment.getClientNo(), accConnection);
             }
             Integer paymentIndex = AccountService.savePayment(payment, accConnection);
             if (paymentIndex <= 0) {
@@ -341,6 +352,15 @@ public class TransactionService {
             HashMap<Integer, Object> numberMap = AccountService.getAccLedgerNumber(payment.getBranch(), accConnection);
 
             for (PaymentDetail paymentDetail1 : paymentDetail) {
+                String invCustomerNo = OperationService.getCustomerNoByInvoice(paymentDetail1.getInvoice(), operaConnection);
+                if (!invCustomerNo.equals(payment.getClientNo())) {
+                    System.out.println("change customer form " + invCustomerNo + " to " + payment.getClientNo());
+                    TTypeIndexDetail typeDetail = AccountService.CheckTypeIndexDetail(Constant.INVOICE, paymentDetail1.getInvoice(), accConnection);
+                    Integer save = AccountService.tAccLedgerByCustomer(typeDetail, customerTypeIndexDetail.getType() == null ? customerMap.get(1) : customerTypeIndexDetail.getAccountRefId(), accConnection);
+                    if (save <= 0) {
+                        throw new RuntimeException("tAccLedger update by customer is fail !");
+                    }
+                }
                 AccountService.saveCustomerLedger(paymentDetail1, paymentIndex, payment, customerTypeIndexDetail, numberMap, user, accConnection);
             }
 
@@ -439,13 +459,13 @@ public class TransactionService {
 //             Execute a query to create statment
             int saveStockAdjustment = AccountService.saveStockAdjustment(adjustment, accConnection);
 
-            Integer saveIndex = AccountService.saveStockAdjustmentToLedger(adjustment, user, saveStockAdjustment, accConnection,operaConnection);
-            if (saveIndex<=0) {
+            Integer saveIndex = AccountService.saveStockAdjustmentToLedger(adjustment, user, saveStockAdjustment, accConnection, operaConnection);
+            if (saveIndex <= 0) {
                 throw new RuntimeException("Stock Ledger Save Fail !");
             }
-            
+
             Integer masterId = OperationService.updateAdjustment(adjustment.getIndexNo(), operaConnection);
-            if (masterId<=0) {
+            if (masterId <= 0) {
                 throw new RuntimeException("Stock Adjustment Status update fail !");
             }
             System.out.println("Stock Adjustment Save Success ! ");

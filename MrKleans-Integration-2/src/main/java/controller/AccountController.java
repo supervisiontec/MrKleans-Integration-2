@@ -896,8 +896,8 @@ public class AccountController {
     private Integer saveInvoiceToAccount(Invoice invoice, List<InvoiceDetail> invDetailList, Integer jobIndex, Integer invIndex, HashMap<Integer, Integer> customerMap, Integer user, Connection accConnection) throws SQLException {
 //        get branch
         MBranch branch = getBranch(invoice.getBranch(), accConnection);
-        if (branch == null) {
-            throw new RuntimeException("Can't find Branch !");
+        if (branch == null || branch.getBranchCode()==null) {
+            throw new RuntimeException("Can't find Branch ! Branch Code is"+invoice.getBranch());
         }
 
 //        getNumber
@@ -1951,6 +1951,16 @@ public class AccountController {
     public Double saveStockLedgerFromAdjustmentMinusQty(StockAdjustment adjustment, StockAdjustmentDetail detail, HashMap<Integer, Integer> itemMap, Integer user, Integer formIndexNo, Connection accConnection) throws SQLException {
         return saveStockLedger(adjustment, detail, user, formIndexNo, itemMap, accConnection);
 
+    }
+
+    public Integer tAccLedgerByCustomer(TTypeIndexDetail typeDetail, Integer account, Connection accConnection) throws SQLException {
+         String insertSql = "UPDATE t_acc_ledger set acc_account=?\n"
+                + "WHERE index_no=?";
+        PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
+        preparedStatement.setInt(1, account);
+        preparedStatement.setInt(2, typeDetail.getAccountIndex());
+
+        return preparedStatement.executeUpdate();
     }
 
 }

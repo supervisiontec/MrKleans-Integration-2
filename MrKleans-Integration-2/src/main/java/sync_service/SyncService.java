@@ -24,7 +24,6 @@ public class SyncService {
     private final OperationService operationService;
 
     private static SyncService instance;
-//    private static final Logger LOGGER = Logger.getLogger(SyncService.class);
 
     public static SyncService getInstance() throws SQLException {
         if (instance == null) {

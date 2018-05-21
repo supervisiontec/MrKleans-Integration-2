@@ -234,18 +234,19 @@ public class OperationController {
                 paymemt.setIndexNo(rst.getInt(1));
                 paymemt.setNumber(rst.getString(2));
                 paymemt.setClientNo(rst.getString(3));
-                paymemt.setEnterDate(rst.getString(4));
-                paymemt.setEnterTime(rst.getString(5));
-                paymemt.setUpdatedDate(rst.getString(6));
-                paymemt.setUpdatedTime(rst.getString(7));
-                paymemt.setTotalAmount(rst.getBigDecimal(8));
-                paymemt.setCashAmount(rst.getBigDecimal(9));
-                paymemt.setChequeAmount(rst.getBigDecimal(10));
-                paymemt.setCardAmount(rst.getBigDecimal(11));
-                paymemt.setOverPaymentAmount(rst.getBigDecimal(12));
-                paymemt.setBranch(rst.getInt(13));
-                paymemt.setCheck(rst.getBoolean(14));
-                paymemt.setIsDownPayment(rst.getBoolean(15));
+                paymemt.setClientName(rst.getString(4));
+                paymemt.setEnterDate(rst.getString(5));
+                paymemt.setEnterTime(rst.getString(6));
+                paymemt.setUpdatedDate(rst.getString(7));
+                paymemt.setUpdatedTime(rst.getString(8));
+                paymemt.setTotalAmount(rst.getBigDecimal(9));
+                paymemt.setCashAmount(rst.getBigDecimal(10));
+                paymemt.setChequeAmount(rst.getBigDecimal(11));
+                paymemt.setCardAmount(rst.getBigDecimal(12));
+                paymemt.setOverPaymentAmount(rst.getBigDecimal(13));
+                paymemt.setBranch(rst.getInt(14));
+                paymemt.setCheck(rst.getBoolean(15));
+                paymemt.setIsDownPayment(rst.getBoolean(16));
                 list.add(paymemt);
             }
             return list;
@@ -476,6 +477,19 @@ public class OperationController {
             preparedStatement.executeUpdate();
         }
         return date;
-                
+
+    }
+
+    public String getCustomerNoByInvoice(String invoice, Connection operaConnection) throws SQLException {
+
+        String query = "select invoice.client_no from invoice where invoice.invoice_no=?\n"
+                + "limit 1";
+        PreparedStatement preparedStatement = operaConnection.prepareStatement(query);
+        preparedStatement.setString(1, invoice);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getString(1);
+        }
+        throw new RuntimeException("Get Customer Number By Invoice is Fail !");
     }
 }

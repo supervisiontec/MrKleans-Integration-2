@@ -27,32 +27,36 @@ import model.operation_model.StockAdjustmentDetail;
  */
 public class OperationService {
 
-    static List<GrnDetail> getGrnDetail(Integer indexNo, Connection operaConnection) throws SQLException {
+    public static List<GrnDetail> getGrnDetail(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().getGrnDetail(indexNo, operaConnection);
     }
 
-    static List<InvoiceDetail> getInvoiceDetail(Integer indexNo, Connection operaConnection) throws SQLException {
+    public static List<InvoiceDetail> getInvoiceDetail(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().getInvoiceDetail(indexNo, operaConnection);
     }
 
-    static Integer updateInvoice(Invoice invoice, Connection operaConnection) throws SQLException {
+    public static Integer updateInvoice(Invoice invoice, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().updateInvoice(invoice,operaConnection);
     }
 
-    static List<PaymentDetail> getPaymentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
+    public static List<PaymentDetail> getPaymentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().getPaymentDetail(indexNo, operaConnection);
     }
 
-    static List<PaymentInformation> getPaymentInformations(Integer indexNo, Connection operaConnection)throws SQLException {
+    public static List<PaymentInformation> getPaymentInformations(Integer indexNo, Connection operaConnection)throws SQLException {
         return OperationController.getInstance().getPaymentInformations(indexNo, operaConnection);
     }
 
-    static List<StockAdjustmentDetail> getAdjustmentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
+    public static List<StockAdjustmentDetail> getAdjustmentDetail(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().getAdjustmentDetail(indexNo,operaConnection);
     }
 
-    static Integer updateAdjustment(Integer indexNo, Connection operaConnection) throws SQLException {
+    public static Integer updateAdjustment(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().updateAdjustment(indexNo,operaConnection);
+    }
+
+    public static String getCustomerNoByInvoice(String invoice, Connection operaConnection) throws SQLException {
+        return OperationController.getInstance().getCustomerNoByInvoice(invoice,operaConnection);
     }
 
     public ArrayList<Grn> getNotCheckGrnList(String date) throws SQLException {
@@ -71,7 +75,7 @@ public class OperationService {
         return OperationController.getInstance().getNotCheckPaymentList(date);
     }
 
-    static Integer updatePayment(Integer indexNo, Connection operaConnection) throws SQLException {
+    public static Integer updatePayment(Integer indexNo, Connection operaConnection) throws SQLException {
         return OperationController.getInstance().updatePayment(indexNo,operaConnection);
     }
 

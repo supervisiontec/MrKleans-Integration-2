@@ -35,6 +35,9 @@ public class Payment implements Serializable {
     @Column(name = "client_no")
     private String clientNo;
 
+    @Column(name = "client_name")
+    private String clientName;
+
     @Column(name = "enter_date")
     private String enterDate;
 
@@ -74,10 +77,11 @@ public class Payment implements Serializable {
     public Payment() {
     }
 
-    public Payment(Integer indexNo, String number, String clientNo, String enterDate, String enterTime, String updatedDate, String updatedTime, BigDecimal totalAmount, BigDecimal cashAmount, BigDecimal chequeAmount, BigDecimal cardAmount, BigDecimal overPaymentAmount, Integer branch, Boolean check, Boolean isDownPayment) {
+    public Payment(Integer indexNo, String number, String clientNo, String clientName, String enterDate, String enterTime, String updatedDate, String updatedTime, BigDecimal totalAmount, BigDecimal cashAmount, BigDecimal chequeAmount, BigDecimal cardAmount, BigDecimal overPaymentAmount, Integer branch, Boolean check, Boolean isDownPayment) {
         this.indexNo = indexNo;
         this.number = number;
         this.clientNo = clientNo;
+        this.clientName = clientName;
         this.enterDate = enterDate;
         this.enterTime = enterTime;
         this.updatedDate = updatedDate;
@@ -90,6 +94,14 @@ public class Payment implements Serializable {
         this.branch = branch;
         this.check = check;
         this.isDownPayment = isDownPayment;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 
     public Boolean getIsDownPayment() {
