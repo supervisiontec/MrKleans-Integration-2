@@ -37,6 +37,7 @@ public interface Constant {
     // master type
     public static final String CUSTOMER = "CUSTOMER";
     public static final String SUPPLIER = "SUPPLIER";
+    public static final String SUPPLIER_NORMAL = "NORMAL";
     public static final String VEHICLE = "VEHICLE";
     public static final String ACCRUED_SUPPLIER= "ACCRUED_SUPPLIER";
     public static final String GL_SUPPLIER = "GL_SUPPLIER";

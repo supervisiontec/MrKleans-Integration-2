@@ -84,6 +84,17 @@ public class AccountController {
 
     }
 
+    public static String getCompantName(Connection connection) throws SQLException {
+        String query = "select m_company.name from m_company\n"
+                + "where m_company.index_no=1";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        ResultSet rst = preparedStatement.executeQuery();
+        if (rst.next()) {
+            return rst.getString(1);
+        }
+        return "";
+    }
+
     public AccountController() throws SQLException {
     }
 
@@ -348,7 +359,7 @@ public class AccountController {
         String query = "select m_branch.* from m_branch";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         ResultSet rst = preparedStatement.executeQuery();
-        ArrayList<MBranch> list = new ArrayList<MBranch>();
+        ArrayList<MBranch> list = new ArrayList<>();
         while (rst.next()) {
             MBranch branch = new MBranch();
             branch.setIndexNo(rst.getInt(1));
@@ -520,7 +531,7 @@ public class AccountController {
         PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
         preparedStatement.setInt(1, nextNumber);
         preparedStatement.setString(2, Constant.CODE_INTEGRATION_GRN + "/" + branch.getBranchCode() + "/" + nextNumber);
-        preparedStatement.setString(3, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(3, grn.getEnterDate());
         preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
         preparedStatement.setInt(6, grn.getBranch());
@@ -550,6 +561,7 @@ public class AccountController {
             map.put(3, resultSet.getInt(1));
             map.put(4, branch.getBranchCode());
             map.put(5, grn.getBranch());
+            map.put(6, grn.getEnterDate());
             return map;
         }
         throw new RuntimeException("Supplier Ledger Account Save Fail !");
@@ -619,7 +631,7 @@ public class AccountController {
         PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
         preparedStatement.setInt(1, Integer.parseInt(ledgerMap.get(1).toString()));
         preparedStatement.setString(2, Constant.CODE_INTEGRATION_GRN + "/" + ledgerMap.get(4).toString() + "/" + Integer.parseInt(ledgerMap.get(1).toString()));
-        preparedStatement.setString(3, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(3, ledgerMap.get(6).toString());
         preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
         preparedStatement.setInt(6, Integer.parseInt(ledgerMap.get(5).toString()));
@@ -656,7 +668,7 @@ public class AccountController {
         PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
         preparedStatement.setInt(1, Integer.parseInt(ledgerMap.get(1).toString()));
         preparedStatement.setString(2, Constant.CODE_INTEGRATION_GRN + "/" + ledgerMap.get(4).toString() + "/" + Integer.parseInt(ledgerMap.get(1).toString()));
-        preparedStatement.setString(3, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(3, grn.getEnterDate());
         preparedStatement.setString(4, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         preparedStatement.setString(5, new SimpleDateFormat("HH:mm:ss").format(new Date()));
         preparedStatement.setInt(6, Integer.parseInt(ledgerMap.get(5).toString()));
@@ -896,8 +908,8 @@ public class AccountController {
     private Integer saveInvoiceToAccount(Invoice invoice, List<InvoiceDetail> invDetailList, Integer jobIndex, Integer invIndex, HashMap<Integer, Integer> customerMap, Integer user, Connection accConnection) throws SQLException {
 //        get branch
         MBranch branch = getBranch(invoice.getBranch(), accConnection);
-        if (branch == null || branch.getBranchCode()==null) {
-            throw new RuntimeException("Can't find Branch ! Branch Code is"+invoice.getBranch());
+        if (branch == null || branch.getBranchCode() == null) {
+            throw new RuntimeException("Can't find Branch ! Branch Code is" + invoice.getBranch());
         }
 
 //        getNumber
@@ -1046,7 +1058,7 @@ public class AccountController {
             preparedStatement.setInt(7, invoice.getBranch());
             preparedStatement.setInt(8, user);
             preparedStatement.setBigDecimal(9, new BigDecimal(0));
-            preparedStatement.setBigDecimal(10, invoiceDetail.getSalesPrice());
+            preparedStatement.setBigDecimal(10, invoiceDetail.getValue());
             preparedStatement.setInt(11, itemSalesIncome);
             preparedStatement.setString(12, Constant.SYSTEM_INTEGRATION_INVOICE);
             preparedStatement.setString(13, invIndex + "");
@@ -1253,7 +1265,7 @@ public class AccountController {
     private Integer saveStockLedger(InvoiceDetail detail, Invoice invoice, HashMap<Integer, Integer> itemMap, HashMap<Integer, Integer> invoiceMap, Integer store, Connection accConnection) throws SQLException {
         List<TStockLedger> stockLedgerList = getFifoList(itemMap.get(2), invoice.getEnterDate(), invoice.getBranch(), store, accConnection);
         if (stockLedgerList.size() <= 0) {
-            throw new RuntimeException("Empty stock Qty for this item (" +detail.getItemNo()+" - "+itemMap.get(2)+" - "+ detail.getItemName() + ")and " + invoice.getEnterDate() + " !");
+            throw new RuntimeException("Empty stock Qty for this item (" + detail.getItemNo() + " - " + itemMap.get(2) + " - " + detail.getItemName() + ")and " + invoice.getEnterDate() + " !");
         }
         Double invQty = detail.getStockRemoveQty().doubleValue();
         for (TStockLedger tStockLedger : stockLedgerList) {
@@ -1263,15 +1275,14 @@ public class AccountController {
                 if (saveT >= 0) {
                     invQty -= tStockLedger.getInQty().doubleValue();
                 }
-            }
-            else if (invQty <= tStockLedger.getInQty().doubleValue()) {
+            } else if (invQty <= tStockLedger.getInQty().doubleValue()) {
                 //save inv qty total
                 Integer saveQ = saveStockLedgerFromInvoice(invoice, itemMap, invoiceMap, new BigDecimal(invQty), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), store, accConnection);
 
                 return saveQ;
             }
         }
-        throw new RuntimeException("Not enough stock qty for this item ("+itemMap.get(2)+ " - "+ detail.getItemName() + ") !");
+        throw new RuntimeException("Not enough stock qty for this item (" + itemMap.get(2) + " - " + detail.getItemName() + ") !");
     }
 
     private Integer getItemUnit(Integer item, Connection accConnection) throws SQLException {
@@ -1864,8 +1875,11 @@ public class AccountController {
                     } else {
                         throw new RuntimeException("Stock Ledger Save Fail !");
                     }
-                }
-                else if (removeValue <= tStockLedger.getInQty().doubleValue()) {
+                    System.out.println(detail.getQty() + " " + tStockLedger.getInQty());
+                    if (detail.getQty().doubleValue() == tStockLedger.getInQty().doubleValue()) {
+                        return totalCost;
+                    }
+                } else if (removeValue <= tStockLedger.getInQty().doubleValue()) {
                     //save inv qty total
                     Integer saveQ = saveStockLedgerFromAdjustment(adjustment, itemMap, new BigDecimal(removeValue), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), mainStock, formIndexNo, accConnection);
                     if (saveQ <= 0) {
@@ -1954,7 +1968,7 @@ public class AccountController {
     }
 
     public Integer tAccLedgerByCustomer(TTypeIndexDetail typeDetail, Integer account, Connection accConnection) throws SQLException {
-         String insertSql = "UPDATE t_acc_ledger set acc_account=?\n"
+        String insertSql = "UPDATE t_acc_ledger set acc_account=?\n"
                 + "WHERE index_no=?";
         PreparedStatement preparedStatement = accConnection.prepareStatement(insertSql);
         preparedStatement.setInt(1, account);

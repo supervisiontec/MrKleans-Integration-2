@@ -110,6 +110,7 @@ public class TransactionService {
                 } else {
                     map.put(1, typeIndexDetailItem.getAccountRefId());
                     map.put(2, typeIndexDetailItem.getAccountIndex());
+                    
                     AccountService.updateItem(detail, map, accConnection);
                 }
                 detail.setGrn(grnIndex);
@@ -166,6 +167,7 @@ public class TransactionService {
     }
 
     public Integer saveInvoice(Invoice invoice, Integer user) {
+        System.out.println("Invoice Processing");
 
         Connection operaConnection = null;
         Connection accConnection = null;
@@ -457,9 +459,12 @@ public class TransactionService {
             accConnection.setAutoCommit(false);
 
 //             Execute a query to create statment
+            System.out.println(" start");
             int saveStockAdjustment = AccountService.saveStockAdjustment(adjustment, accConnection);
+            System.out.println(saveStockAdjustment+" 1");
 
             Integer saveIndex = AccountService.saveStockAdjustmentToLedger(adjustment, user, saveStockAdjustment, accConnection, operaConnection);
+            System.out.println(saveIndex+" 2");
             if (saveIndex <= 0) {
                 throw new RuntimeException("Stock Ledger Save Fail !");
             }
@@ -494,5 +499,40 @@ public class TransactionService {
 
             }
         }
+    }
+
+    public String getCompanyName() {
+//        Connection operaConnection = null;
+        Connection accConnection = null;
+        String companyName="";
+        try {
+            accConnection = accountDataSourceWrapper.getConnection();
+
+            //Set auto commit as false.
+            accConnection.setAutoCommit(false);
+            companyName = AccountService.getCompanyName(accConnection);
+   
+            //commit
+            accConnection.commit();
+           
+
+            //Clean-up environment
+            accConnection.close();
+
+        } catch (Exception e) {
+            try {
+                System.out.println("COMPILE ERROR ! , check the data and try again !");
+                System.out.println(e);
+               
+                if (accConnection != null) {
+                    accConnection.rollback();
+                }
+                System.out.println("Transactions Rollbacked !");
+            } catch (SQLException se2) {
+                System.out.println("Can't find database Connections !");
+
+            }
+        }
+        return companyName;
     }
 }

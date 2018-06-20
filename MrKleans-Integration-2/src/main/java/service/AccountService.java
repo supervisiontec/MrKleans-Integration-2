@@ -7,6 +7,7 @@ package service;
 
 import common.Constant;
 import controller.AccountController;
+import java.security.AccessController;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class AccountService {
         supplier.setContactName(grn.getSupName());
         supplier.setName(grn.getSupName());
         supplier.setContactNo(null);
-        supplier.setType(Constant.SUPPLIER);
+        supplier.setType(Constant.SUPPLIER_NORMAL);
 
         Integer saveSupplierMaster = AccountController.getInstance().saveSupplierMaster(supplier, connection);
         HashMap<Integer, Integer> map = new HashMap<>();
@@ -622,13 +623,12 @@ public class AccountService {
             } else {
                 // minus qty     
                 Double totalCost = AccountController.getInstance().saveStockLedgerFromAdjustmentMinusQty(adjustment, detail, itemMap, user, formIndexNo, accConnection);
-                if (totalCost <= 0) {
+                if (totalCost < 0) {
                     throw new RuntimeException("Stock Ledger Save Fail !");
                 } else {
                     System.out.println("Stock Adjusted from " + Constant.ADJUSTMENT + " - " + detail.getItemNo() + " - " + detail.getItemName() + " - (" + detail.getQty() + ")");
                     return 1;
                 }
-//                return AccountController.getInstance().saveStockAdjustmentToAccountMinus(adjustment, detail, stockAccount, stockAdjustmentAccount, user, formIndexNo, accConnection);
             }
         } else {
             throw new RuntimeException("Adjustment Type Doesn't Match !");
@@ -643,6 +643,10 @@ public class AccountService {
 
     public static Integer tAccLedgerByCustomer(TTypeIndexDetail typeDetail, Integer account, Connection accConnection) throws SQLException {
         return AccountController.getInstance().tAccLedgerByCustomer(typeDetail, account, accConnection);
+    }
+
+    public static String getCompanyName(Connection accConnection) throws SQLException {
+        return AccountController.getCompantName(accConnection);
     }
 
 }
