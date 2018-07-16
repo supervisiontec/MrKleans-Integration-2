@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import model.account_model.MSupplier;
 import model.operation_model.Grn;
 import model.operation_model.GrnDetail;
 import model.operation_model.Invoice;

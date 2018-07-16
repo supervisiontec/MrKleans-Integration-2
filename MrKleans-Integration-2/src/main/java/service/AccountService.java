@@ -568,7 +568,6 @@ public class AccountService {
                     // get total cost and devided by qty
                     System.out.println("Stock Adjusted from " + Constant.ITEM_CHANGE_FORM + " - " + detail.getItemNo().trim() + " - " + detail.getItemName() + " - " + detail.getQty());
                     return AccountController.getInstance().saveStockLedger(adjustment, detail, totalCost, user, formIndexNo, itemMap, accConnection);
-
                 }
             }
 
@@ -610,9 +609,9 @@ public class AccountService {
             if (detail.getQty().doubleValue() > 0) {
                 // plus qty     
 //                return AccountController.getInstance().saveStockAdjustmentToAccountPlus(adjustment, detail, stockAccount, stockAdjustmentAccount, user, formIndexNo, itemMap, accConnection);
-                if (detail.getCostPrice().doubleValue() <= 0) {
-                    throw new RuntimeException("Error ! Cost Price is zero !");
-                }
+//                if (detail.getCostPrice().doubleValue() <= 0) {
+//                    throw new RuntimeException("Error ! Cost Price is zero !");
+//                }
                 Integer save = AccountController.getInstance().saveStockLedgerFromAdjustmentPlusQty(adjustment, detail, itemMap, user, formIndexNo, accConnection);
                 if (save <= 0) {
                     throw new RuntimeException("Stock Ledger Save Fail !");
