@@ -38,7 +38,6 @@ public class SyncService {
     }
 
     public void executeGrn(String date, Integer user) throws SQLException {
-
         ArrayList<Grn> grnList = operationService.getNotCheckGrnList(date);
         if (grnList.isEmpty()) {
             System.out.println("Integration Grn is empty!");

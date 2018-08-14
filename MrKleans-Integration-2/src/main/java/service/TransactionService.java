@@ -55,7 +55,6 @@ public class TransactionService {
             //Open a connection
             operaConnection = operationDataSourceWrapper.getConnection();
             accConnection = accountDataSourceWrapper.getConnection();
-
             //Set auto commit as false.
             operaConnection.setAutoCommit(false);
             accConnection.setAutoCommit(false);
@@ -64,7 +63,6 @@ public class TransactionService {
             if (grnDetail.isEmpty()) {
                 throw new RuntimeException("Grn Detail was Empty !");
             }
-
             HashMap<Integer, Integer> supplierMap = new HashMap<>();
             TTypeIndexDetail typeIndexDetail;
             typeIndexDetail = AccountService.CheckTypeIndexDetail(Constant.SUPPLIER, grn.getSupNo(), accConnection);
@@ -90,7 +88,6 @@ public class TransactionService {
 
 //          save acc ledger    
             HashMap<Integer, Object> ledgerMap = AccountService.saveAccountLedgerWithSupplierNbtVat(grn, supplierMap, grnIndex, user, accConnection);
-
 //          save item
             HashMap<Integer, Integer> map = new HashMap<>();
             for (GrnDetail detail : grnDetail) {

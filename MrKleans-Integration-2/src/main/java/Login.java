@@ -43,6 +43,7 @@ public class Login extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         txtUserName = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         txtLoginPswd = new javax.swing.JPasswordField();
         btnLogin = new javax.swing.JButton();
         lblwrong = new javax.swing.JLabel();
@@ -53,41 +54,53 @@ public class Login extends javax.swing.JFrame {
 
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 1, 36)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Bodoni MT", 1, 36)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("User Login");
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 30, 240, -1));
 
+        jLabel3.setFont(new java.awt.Font("Bodoni MT", 1, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("User Name :");
         jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 80, -1, -1));
-        jPanel1.add(txtUserName, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 100, 240, 30));
+        jPanel1.add(txtUserName, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 110, 240, 30));
 
+        jLabel4.setFont(new java.awt.Font("Bodoni MT", 1, 18)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Password :");
         jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 160, -1, -1));
+
+        jButton1.setFont(new java.awt.Font("Bodoni MT", 0, 13)); // NOI18N
+        jButton1.setText("Cancel");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 240, 110, -1));
 
         txtLoginPswd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtLoginPswdActionPerformed(evt);
             }
         });
-        jPanel1.add(txtLoginPswd, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 180, 240, 30));
+        jPanel1.add(txtLoginPswd, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 190, 240, 30));
 
+        btnLogin.setFont(new java.awt.Font("Bodoni MT", 0, 13)); // NOI18N
         btnLogin.setText("Login");
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLoginActionPerformed(evt);
             }
         });
-        jPanel1.add(btnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 230, 110, -1));
+        jPanel1.add(btnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 240, 110, -1));
 
-        lblwrong.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        lblwrong.setFont(new java.awt.Font("Bodoni MT", 0, 14)); // NOI18N
         lblwrong.setForeground(new java.awt.Color(255, 0, 51));
         lblwrong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblwrong.setText("User name or password is incorret !");
-        jPanel1.add(lblwrong, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 270, 240, -1));
+        jPanel1.add(lblwrong, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 280, 240, -1));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/background2.jpg"))); // NOI18N
         jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(-1, 0, 410, 310));
@@ -113,6 +126,7 @@ public class Login extends javax.swing.JFrame {
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         try {
 //          getUserLogin
+            lblwrong.setVisible(false);
             Integer loginUser = SyncService.getInstance().checkLoginUser(txtUserName.getText(), txtLoginPswd.getText());
             if (loginUser <= 0) {
                 lblwrong.setVisible(true);
@@ -132,6 +146,10 @@ public class Login extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_btnLoginActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -170,6 +188,7 @@ public class Login extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLogin;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

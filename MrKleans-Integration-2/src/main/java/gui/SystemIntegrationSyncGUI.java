@@ -10,8 +10,9 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import service.AccountService;
 import service.TransactionService;
 import sync_service.SyncService;
 
@@ -25,12 +26,14 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
     public SystemIntegrationSyncGUI() {
         initComponents();
+        ImageIcon imageIcon = new ImageIcon("./images/task.png"); 
+        setIconImage(imageIcon.getImage());
 
         initOthers();
         lblProcess.setText("");
 
         try {
-            getDetailCount(txtDate.getText());
+            getDetailCount(lblDate.getText());
         } catch (SQLException ex) {
             System.out.println("get detail count function not support !");
             Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -60,16 +63,16 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
     private void getDetailCount(String date) throws SQLException {
         Integer stockAdjustmentCount = SyncService.getInstance().getStockAdjustmentCount(date);
-        btnStockAdjust.setText("Stock Adjustment" + " - " + stockAdjustmentCount);
+        lblStockAdjust.setText("Stock Adjustment" + " - " + stockAdjustmentCount);
 
         Integer grnCount = SyncService.getInstance().getGrnCount(date);
-        btnGrn.setText("GRN" + " - " + grnCount);
+        lblGrn.setText("GRN" + " - " + grnCount);
 
         Integer invoiceCount = SyncService.getInstance().getInvoiceCount(date);
-        btnInvoice.setText("Invoice" + " - " + invoiceCount);
+        lblInvoice.setText("Invoice" + " - " + invoiceCount);
 
         Integer paymentCount = SyncService.getInstance().getPaymentCount(date);
-        btnPayment.setText("Payment" + " - " + paymentCount);
+        lblPayment.setText("Payment" + " - " + paymentCount);
 
     }
 
@@ -80,7 +83,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
             setLocationRelativeTo(null);
             txtLog.setEditable(false);
             String date = SyncService.getInstance().getTransactionDate();
-            txtDate.setText(date);
+            lblDate.setText(date);
 
             //set company
             String companyName = TransactionService.getInstance().getCompanyName();
@@ -102,142 +105,256 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        lblGrn = new javax.swing.JLabel();
+        lblStockAdjust = new javax.swing.JLabel();
+        lblInvoice = new javax.swing.JLabel();
+        lblPayment = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        lblDate = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtLog = new javax.swing.JTextArea();
-        txtDate = new javax.swing.JTextField();
-        btnClear = new javax.swing.JButton();
-        btnGrn = new javax.swing.JButton();
-        btnInvoice = new javax.swing.JButton();
-        btnPayment = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
         lblProcess = new javax.swing.JLabel();
-        btnStockAdjust = new javax.swing.JButton();
-        btnSync = new javax.swing.JButton();
         lblCompanyName = new javax.swing.JLabel();
+        lblClear = new javax.swing.JLabel();
+        lblClose = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        lblClose1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setMinimumSize(new java.awt.Dimension(550, 330));
+        setUndecorated(true);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
         });
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel1.setBackground(new java.awt.Color(249, 249, 249));
+        jLabel1.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Date");
+        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+
+        lblGrn.setBackground(new java.awt.Color(91, 192, 222));
+        lblGrn.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblGrn.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblGrn.setText("GRN");
+        lblGrn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblGrn.setOpaque(true);
+        lblGrn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblGrnMouseClicked(evt);
+            }
+        });
+
+        lblStockAdjust.setBackground(new java.awt.Color(91, 192, 222));
+        lblStockAdjust.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblStockAdjust.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblStockAdjust.setText("Stock Adjustment");
+        lblStockAdjust.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblStockAdjust.setOpaque(true);
+        lblStockAdjust.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblStockAdjustMouseClicked(evt);
+            }
+        });
+
+        lblInvoice.setBackground(new java.awt.Color(91, 192, 222));
+        lblInvoice.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblInvoice.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblInvoice.setText("Invoice");
+        lblInvoice.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblInvoice.setOpaque(true);
+        lblInvoice.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblInvoiceMouseClicked(evt);
+            }
+        });
+
+        lblPayment.setBackground(new java.awt.Color(91, 192, 222));
+        lblPayment.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblPayment.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblPayment.setText("Payment");
+        lblPayment.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblPayment.setOpaque(true);
+        lblPayment.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblPaymentMouseClicked(evt);
+            }
+        });
+
+        jLabel6.setBackground(new java.awt.Color(91, 192, 222));
+        jLabel6.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel6.setText("Next Date");
+        jLabel6.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel6.setOpaque(true);
+        jLabel6.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel6MouseClicked(evt);
+            }
+        });
+
+        lblDate.setBackground(new java.awt.Color(249, 249, 249));
+        lblDate.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblDate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblDate.setText("2018-02-02");
+        lblDate.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblStockAdjust, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(lblDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblDate, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblGrn, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblStockAdjust, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE)
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(-2, -2, 190, 500));
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
         txtLog.setColumns(20);
+        txtLog.setFont(new java.awt.Font("Bodoni MT", 0, 14)); // NOI18N
         txtLog.setRows(5);
         jScrollPane2.setViewportView(txtLog);
 
-        txtDate.setEnabled(false);
+        lblProcess.setFont(new java.awt.Font("Bodoni MT", 1, 16)); // NOI18N
+        lblProcess.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblProcess.setText("Processing . . .");
 
-        btnClear.setText("Clear");
-        btnClear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClearActionPerformed(evt);
+        lblCompanyName.setFont(new java.awt.Font("Bodoni MT", 1, 16)); // NOI18N
+        lblCompanyName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        lblClear.setBackground(new java.awt.Color(91, 192, 222));
+        lblClear.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblClear.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblClear.setText("Clear");
+        lblClear.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblClear.setOpaque(true);
+        lblClear.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblClearMouseClicked(evt);
             }
         });
 
-        btnGrn.setText("GRN");
-        btnGrn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGrnActionPerformed(evt);
+        lblClose.setBackground(new java.awt.Color(217, 83, 79));
+        lblClose.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblClose.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblClose.setText("X");
+        lblClose.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblClose.setOpaque(true);
+        lblClose.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblCloseMouseClicked(evt);
             }
         });
 
-        btnInvoice.setText("Invoice");
-        btnInvoice.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnInvoiceActionPerformed(evt);
+        jLabel7.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        jLabel7.setText("Last Updated Date  :  2018-08-10");
+
+        jLabel8.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel8.setText("Software By Supervision Technology (PVT), Ltd");
+
+        lblClose1.setBackground(new java.awt.Color(255, 136, 0));
+        lblClose1.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
+        lblClose1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblClose1.setText("_");
+        lblClose1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        lblClose1.setOpaque(true);
+        lblClose1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblClose1MouseClicked(evt);
             }
         });
 
-        btnPayment.setText("Payment");
-        btnPayment.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPaymentActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Date :");
-
-        lblProcess.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
-        lblProcess.setText("processing . . .");
-
-        btnStockAdjust.setText("Stock Adjustment");
-        btnStockAdjust.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnStockAdjustActionPerformed(evt);
-            }
-        });
-
-        btnSync.setText("Sync");
-        btnSync.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSyncActionPerformed(evt);
-            }
-        });
-
-        lblCompanyName.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSync, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnStockAdjust, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(btnGrn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btnInvoice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btnPayment, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblCompanyName, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 682, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblCompanyName, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblClear, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblClose1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblClose, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(13, 13, 13))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnClear)
-                        .addComponent(lblProcess)
-                        .addComponent(lblCompanyName, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblClear, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblClose, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblClose1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(lblCompanyName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblProcess, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnGrn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnStockAdjust)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnInvoice)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnPayment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSync))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 417, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel8))
+                .addGap(15, 15, 15))
         );
+
+        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 0, 690, 500));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -247,76 +364,78 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         this.setDefaultCloseOperation(SystemIntegrationSyncGUI.EXIT_ON_CLOSE);
     }//GEN-LAST:event_formWindowClosing
 
-    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        txtLog.setText("");
-        try {
-            getDetailCount(txtDate.getText());
-        } catch (SQLException ex) {
-            System.out.println("get detail count function not support !");
-            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_btnClearActionPerformed
+    private void lblCloseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblCloseMouseClicked
+        this.dispose();
+    }//GEN-LAST:event_lblCloseMouseClicked
 
-    private void btnInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoiceActionPerformed
+    private void lblClearMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblClearMouseClicked
+        dataClear();
+        
+    }//GEN-LAST:event_lblClearMouseClicked
+
+    private void lblGrnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblGrnMouseClicked
         if (optionPain() == 0) {
             try {
                 lblProcess.setText("processing . . .");
-                executeInvoice(txtDate.getText(), loginUser);
+                executeGrn(lblDate.getText(), loginUser);
                 lblProcess.setText("");
             } catch (SQLException ex) {
                 java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-    }//GEN-LAST:event_btnInvoiceActionPerformed
+    }//GEN-LAST:event_lblGrnMouseClicked
 
-    private void btnGrnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrnActionPerformed
+    private void lblStockAdjustMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblStockAdjustMouseClicked
         if (optionPain() == 0) {
             try {
                 lblProcess.setText("processing . . .");
-                executeGrn(txtDate.getText(), loginUser);
+                executeStockAdjustment(lblDate.getText(), loginUser);
+                lblProcess.setText("");
+            } catch (SQLException ex) {
+                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_lblStockAdjustMouseClicked
+
+    private void lblInvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblInvoiceMouseClicked
+        if (optionPain() == 0) {
+            try {
+                lblProcess.setText("processing . . .");
+                executeInvoice(lblDate.getText(), loginUser);
                 lblProcess.setText("");
             } catch (SQLException ex) {
                 java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }//GEN-LAST:event_lblInvoiceMouseClicked
 
-    }//GEN-LAST:event_btnGrnActionPerformed
-
-    private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
+    private void lblPaymentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPaymentMouseClicked
         if (optionPain() == 0) {
             try {
                 lblProcess.setText("processing . . .");
-                executePayment(txtDate.getText(), loginUser);
+                executePayment(lblDate.getText(), loginUser);
                 lblProcess.setText("");
             } catch (SQLException ex) {
                 Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-    }//GEN-LAST:event_btnPaymentActionPerformed
+    }//GEN-LAST:event_lblPaymentMouseClicked
 
-    private void btnStockAdjustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStockAdjustActionPerformed
+    private void jLabel6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel6MouseClicked
         if (optionPain() == 0) {
             try {
-                lblProcess.setText("processing . . .");
-                executeStockAdjustment(txtDate.getText(), loginUser);
-                lblProcess.setText("");
-            } catch (SQLException ex) {
-                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }//GEN-LAST:event_btnStockAdjustActionPerformed
-
-    private void btnSyncActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSyncActionPerformed
-        if (optionPain() == 0) {
-            try {
-                String date = SyncService.getInstance().getNextDate(txtDate.getText());
-                txtDate.setText(date);
-                btnClear.doClick();
+                String date = SyncService.getInstance().getNextDate(lblDate.getText());
+                lblDate.setText(date);
+                dataClear();
             } catch (SQLException | ParseException ex) {
                 Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-    }//GEN-LAST:event_btnSyncActionPerformed
+    }//GEN-LAST:event_jLabel6MouseClicked
+
+    private void lblClose1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblClose1MouseClicked
+        this.setExtendedState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_lblClose1MouseClicked
 
     /**
      * @param args the command line arguments
@@ -326,22 +445,38 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnClear;
-    private javax.swing.JButton btnGrn;
-    private javax.swing.JButton btnInvoice;
-    private javax.swing.JButton btnPayment;
-    private javax.swing.JButton btnStockAdjust;
-    private javax.swing.JButton btnSync;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblClear;
+    private javax.swing.JLabel lblClose;
+    private javax.swing.JLabel lblClose1;
     private javax.swing.JLabel lblCompanyName;
+    private javax.swing.JLabel lblDate;
+    private javax.swing.JLabel lblGrn;
+    private javax.swing.JLabel lblInvoice;
+    private javax.swing.JLabel lblPayment;
     private javax.swing.JLabel lblProcess;
-    private javax.swing.JTextField txtDate;
+    private javax.swing.JLabel lblStockAdjust;
     private javax.swing.JTextArea txtLog;
     // End of variables declaration//GEN-END:variables
 
     private int optionPain() {
         return JOptionPane.showConfirmDialog(null, "Are you sure ?", "Warning", JOptionPane.YES_OPTION);
+    }
+
+    private void dataClear() {
+        txtLog.setText("");
+        try {
+            getDetailCount(lblDate.getText());
+        } catch (SQLException ex) {
+            System.out.println("get detail count function not support !");
+            Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

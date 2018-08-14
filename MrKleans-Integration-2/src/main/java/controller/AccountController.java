@@ -508,8 +508,8 @@ public class AccountController {
     public HashMap<Integer, Object> saveSupplierAccountLedger(Grn grn, HashMap<Integer, Integer> supplierMap, Integer grnIndex, Integer user, Connection accConnection) throws SQLException {
 //        get branch
         MBranch branch = getBranch(grn.getBranch(), accConnection);
-        if (branch == null) {
-            throw new RuntimeException("Can't find Branch !");
+        if (branch.getName() == null) {
+            throw new RuntimeException("Can't find Branch ! Branch code is "+grn.getBranch());
         }
 
 //        getNumber
