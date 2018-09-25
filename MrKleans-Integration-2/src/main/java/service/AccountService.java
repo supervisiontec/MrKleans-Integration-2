@@ -193,7 +193,7 @@ public class AccountService {
 
     private static Integer saveStock(Integer branch, Connection accConnection) throws SQLException {
         Integer stockIndex = AccountController.getInstance().findStock(branch, Constant.STOCK_MAIN, accConnection);
-        if (stockIndex < 0) {
+        if (stockIndex <= 0) {
             //save new default stock
             stockIndex = AccountController.getInstance().saveStock(branch, Constant.STOCK_MAIN, accConnection);
             if (stockIndex < 0) {

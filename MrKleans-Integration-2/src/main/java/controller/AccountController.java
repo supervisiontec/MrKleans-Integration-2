@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1269,6 +1270,8 @@ public class AccountController {
         }
         Double invQty = detail.getStockRemoveQty().doubleValue();
         for (TStockLedger tStockLedger : stockLedgerList) {
+            invQty=Double.valueOf(new DecimalFormat(".####").format(invQty));
+            System.out.println("Fifo Qty : "+tStockLedger.getInQty()+" -  Inv Qty : "+invQty);
             if (invQty > tStockLedger.getInQty().doubleValue()) {
                 //save tStockLedger total
                 Integer saveT = saveStockLedgerFromInvoice(invoice, itemMap, invoiceMap, tStockLedger.getInQty(), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), store, accConnection);
@@ -1277,6 +1280,7 @@ public class AccountController {
                 }
             } else if (invQty <= tStockLedger.getInQty().doubleValue()) {
                 //save inv qty total
+//                throw  new RuntimeException("success error");
                 Integer saveQ = saveStockLedgerFromInvoice(invoice, itemMap, invoiceMap, new BigDecimal(invQty), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), store, accConnection);
 
                 return saveQ;
@@ -1865,9 +1869,13 @@ public class AccountController {
             if (fifoList.size() <= 0) {
                 throw new RuntimeException("Stock is empty for " + itemMap.get(2) + " - " + adjustment.getBranch() + " - " + adjustment.getEnterDate());
             }
+            System.out.println(detail.getItemNo()+" - "+detail.getItemName()+" - Qty : "+detail.getQty());
             for (TStockLedger tStockLedger : fifoList) {
+                System.out.println(tStockLedger.getInQty());
                 if (removeValue > tStockLedger.getInQty().doubleValue()) {
                     //save tStockLedger total
+                    System.out.println("tStockLedger.getInQty() "+ tStockLedger.getInQty());
+                            
                     Integer saveT = saveStockLedgerFromAdjustment(adjustment, itemMap, tStockLedger.getInQty(), tStockLedger.getAvaragePriceIn(), tStockLedger.getGroupNumber(), mainStock, formIndexNo, accConnection);
                     if (saveT > 0) {
                         removeValue -= tStockLedger.getInQty().doubleValue();
@@ -1911,6 +1919,7 @@ public class AccountController {
         preparedStatement.setInt(10, adjustment.getBranch());
         preparedStatement.setString(11, Constant.SYSTEM_INTEGRATION_STOCK_ADJUSTMENT);
         preparedStatement.setInt(12, groupNumber);
+        System.out.println(preparedStatement.toString());
 
         return preparedStatement.executeUpdate();
     }

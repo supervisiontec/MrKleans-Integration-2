@@ -43,8 +43,8 @@ public interface Constant {
     public static final String GL_SUPPLIER = "GL_SUPPLIER";
     public static final String ITEM = "ITEM";
     public static final String INVOICE = "INVOICE";
-//    public static final String LOAN = "LOAN";
     public static final String GRN = "GRN";
+    public static final String PAYMENT = "PAYMENT";
     
     //form name
     public static final String SYSTEM_INTEGRATION = "SYSTEM_INTEGRATION";

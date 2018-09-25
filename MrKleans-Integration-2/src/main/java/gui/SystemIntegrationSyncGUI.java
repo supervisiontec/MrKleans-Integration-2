@@ -5,6 +5,7 @@
  */
 package gui;
 
+import common.Constant;
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -13,6 +14,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import service.TransactionService;
 import sync_service.SyncService;
 
@@ -26,7 +28,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
     public SystemIntegrationSyncGUI() {
         initComponents();
-        ImageIcon imageIcon = new ImageIcon("./images/task.png"); 
+        ImageIcon imageIcon = new ImageIcon("./images/task.png");
         setIconImage(imageIcon.getImage());
 
         initOthers();
@@ -265,6 +267,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
         lblCompanyName.setFont(new java.awt.Font("Bodoni MT", 1, 16)); // NOI18N
         lblCompanyName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblCompanyName.setText("Branch name goes here");
 
         lblClear.setBackground(new java.awt.Color(91, 192, 222));
         lblClear.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
@@ -291,7 +294,7 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
         });
 
         jLabel7.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
-        jLabel7.setText("Last Updated Date  :  2018-08-10");
+        jLabel7.setText("Last Updated Date  :  2018-09-07");
 
         jLabel8.setFont(new java.awt.Font("Bodoni MT", 1, 14)); // NOI18N
         jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -370,54 +373,30 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
 
     private void lblClearMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblClearMouseClicked
         dataClear();
-        
+
     }//GEN-LAST:event_lblClearMouseClicked
 
     private void lblGrnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblGrnMouseClicked
         if (optionPain() == 0) {
-            try {
-                lblProcess.setText("processing . . .");
-                executeGrn(lblDate.getText(), loginUser);
-                lblProcess.setText("");
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            loader(lblDate.getText(), loginUser, Constant.GRN);
         }
     }//GEN-LAST:event_lblGrnMouseClicked
 
     private void lblStockAdjustMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblStockAdjustMouseClicked
         if (optionPain() == 0) {
-            try {
-                lblProcess.setText("processing . . .");
-                executeStockAdjustment(lblDate.getText(), loginUser);
-                lblProcess.setText("");
-            } catch (SQLException ex) {
-                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            loader(lblDate.getText(), loginUser, Constant.ADJUSTMENT);
         }
     }//GEN-LAST:event_lblStockAdjustMouseClicked
 
     private void lblInvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblInvoiceMouseClicked
         if (optionPain() == 0) {
-            try {
-                lblProcess.setText("processing . . .");
-                executeInvoice(lblDate.getText(), loginUser);
-                lblProcess.setText("");
-            } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            loader(lblDate.getText(), loginUser, Constant.INVOICE);
         }
     }//GEN-LAST:event_lblInvoiceMouseClicked
 
     private void lblPaymentMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPaymentMouseClicked
         if (optionPain() == 0) {
-            try {
-                lblProcess.setText("processing . . .");
-                executePayment(lblDate.getText(), loginUser);
-                lblProcess.setText("");
-            } catch (SQLException ex) {
-                Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            loader(lblDate.getText(), loginUser, Constant.PAYMENT);
         }
     }//GEN-LAST:event_lblPaymentMouseClicked
 
@@ -477,6 +456,50 @@ public class SystemIntegrationSyncGUI extends javax.swing.JFrame {
             System.out.println("get detail count function not support !");
             Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void loader(String date, Integer loginUser, String type) {
+        lblProcess.setText("Loading...");
+//        lblProcess.setIcon(new ImageIcon("../images/loader.gif"));
+        txtLog.setText("");
+//        proBarLoading.setValue(0);
+        new SwingWorker<Void, String>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    if (null == type) {
+                        throw new RuntimeException("transaction type doesn't match into doInBackground method !");
+                    } else {
+                        switch (type) {
+                            case Constant.ADJUSTMENT:
+                                executeStockAdjustment(date, loginUser);
+                                break;
+                            case Constant.GRN:
+                                executeGrn(date, loginUser);
+                                break;
+                            case Constant.INVOICE:
+                                executeInvoice(date, loginUser);
+                                break;
+                            case Constant.PAYMENT:
+                                executePayment(date, loginUser);
+                                break;
+                            default:
+                                throw new RuntimeException("transaction type doesn't match into doInBackground method !");
+                        }
+                    }
+                } catch (SQLException ex) {
+                    System.out.println(ex.getMessage());
+                    lblProcess.setText("");
+                    Logger.getLogger(SystemIntegrationSyncGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                lblProcess.setText("");
+            }
+        }.execute();
     }
 
 }
