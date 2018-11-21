@@ -1266,6 +1266,8 @@ public class AccountController {
     private Integer saveStockLedger(InvoiceDetail detail, Invoice invoice, HashMap<Integer, Integer> itemMap, HashMap<Integer, Integer> invoiceMap, Integer store, Connection accConnection) throws SQLException {
         List<TStockLedger> stockLedgerList = getFifoList(itemMap.get(2), invoice.getEnterDate(), invoice.getBranch(), store, accConnection);
         if (stockLedgerList.size() <= 0) {
+            System.out.println("Invoice Qty is "+detail.getQty());
+            System.out.println("Invoice Item Code is  "+detail.getItemNo()+"  -  "+detail.getItemBarcode());
             throw new RuntimeException("Empty stock Qty for this item (" + detail.getItemNo() + " - " + itemMap.get(2) + " - " + detail.getItemName() + ")and " + invoice.getEnterDate() + " !");
         }
         Double invQty = detail.getStockRemoveQty().doubleValue();

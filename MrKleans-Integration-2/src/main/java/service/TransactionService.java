@@ -351,15 +351,16 @@ public class TransactionService {
             HashMap<Integer, Object> numberMap = AccountService.getAccLedgerNumber(payment.getBranch(), accConnection);
 
             for (PaymentDetail paymentDetail1 : paymentDetail) {
-                String invCustomerNo = OperationService.getCustomerNoByInvoice(paymentDetail1.getInvoice(), operaConnection);
-                if (!invCustomerNo.equals(payment.getClientNo())) {
-                    System.out.println("change customer form " + invCustomerNo + " to " + payment.getClientNo());
-                    TTypeIndexDetail typeDetail = AccountService.CheckTypeIndexDetail(Constant.INVOICE, paymentDetail1.getInvoice(), accConnection);
-                    Integer save = AccountService.tAccLedgerByCustomer(typeDetail, customerTypeIndexDetail.getType() == null ? customerMap.get(1) : customerTypeIndexDetail.getAccountRefId(), accConnection);
-                    if (save <= 0) {
-                        throw new RuntimeException("tAccLedger update by customer is fail !");
-                    }
-                }
+//                String invCustomerNo = OperationService.getCustomerNoByInvoice(paymentDetail1.getInvoice(), operaConnection);
+//                if (!invCustomerNo.equals(payment.getClientNo())) {
+//                if (false) {
+//                    System.out.println("change customer form " + invCustomerNo + " to " + payment.getClientNo());
+//                    TTypeIndexDetail typeDetail = AccountService.CheckTypeIndexDetail(Constant.INVOICE, paymentDetail1.getInvoice(), accConnection);
+//                    Integer save = AccountService.tAccLedgerByCustomer(typeDetail, customerTypeIndexDetail.getType() == null ? customerMap.get(1) : customerTypeIndexDetail.getAccountRefId(), accConnection);
+//                    if (save <= 0) {
+//                        throw new RuntimeException("tAccLedger update by customer is fail !");
+//                    }
+//                }
                 AccountService.saveCustomerLedger(paymentDetail1, paymentIndex, payment, customerTypeIndexDetail, numberMap, user, accConnection);
             }
 
